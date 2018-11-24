@@ -137,7 +137,6 @@ img {
 
 .card-piles {
   margin-top: 150px;
-  display: flex;
 }
 
 .card-piles li img {
@@ -147,8 +146,8 @@ img {
 
 .card-pile {
   border: 2px solid white;
-  flex: 1;
-  height: 300px;
+  height: 1000px;
+  margin: 20px;
 }
 
 .card-count {
@@ -159,7 +158,9 @@ img {
 
 /* buttons */
 .take-pile-btn {
-  position: relative;
-  left: 40%;
-  top: 90%;
+  display: block;
+}
+
+.pile-list {
+  display: block;
 }

@@ -56,10 +56,12 @@
   //turn cardlist into array
 
   let cardArray = cardList.split("|");
-  let cardPiles = document.querySelectorAll(".take-pile-btn");
+  let cardPileBtns = document.querySelectorAll(".take-pile-btn");
   let cardPile1Btn = document.querySelector(".take-pile-1");
   let cardPile2Btn = document.querySelector(".take-pile-2");
   let cardPile3Btn = document.querySelector(".take-pile-3");
+  let cardPiles = document.querySelectorAll(".card-pile");
+  let cardPileLists = document.querySelectorAll(".pile-list");
   let cardPile1 = [];
   let cardPile2 = [];
   let cardPile3 = [];
@@ -69,7 +71,7 @@
   let player2Pile = [];
   let player1Turn = true;
   console.log(cardArray);
-  console.log(cardPiles);
+  console.log(cardPileBtns);
 
   //shuffle Array
   function shuffle(array) {
@@ -94,7 +96,7 @@
 
   cardArray = shuffle(cardArray);
   console.log(cardArray);
-  console.log(cardPiles);
+  console.log(cardPileBtns);
 
   cardCount.innerHTML = cardsLeft + " Cards Left";
 
@@ -102,7 +104,41 @@
   cardPile2.push(cardArray.pop());
   cardPile3.push(cardArray.pop());
 
-  cardPiles.forEach(ele => {
+  function refreshVisualPiles() {
+    cardPileLists.forEach(function(list) {
+      list.innerHTML = "";
+    });
+
+    cardPile1.forEach(function(card) {
+      let newCard = document.createElement("li");
+      newCard.innerHTML = `<li data-checked="true"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
+      cardPileLists[0].appendChild(newCard);
+    });
+    cardPile2.forEach(function(card) {
+      let newCard = document.createElement("li");
+      newCard.innerHTML = `<li data-checked="true"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
+      cardPileLists[1].appendChild(newCard);
+    });
+    cardPile3.forEach(function(card) {
+      let newCard = document.createElement("li");
+      newCard.innerHTML = `<li data-checked="true"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
+      cardPileLists[2].appendChild(newCard);
+    });
+    player1Pile.forEach(function(card) {
+      let newCard = document.createElement("li");
+      newCard.innerHTML = `<li data-checked="true"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
+      cardPileLists[3].appendChild(newCard);
+    });
+    player2Pile.forEach(function(card) {
+      let newCard = document.createElement("li");
+      newCard.innerHTML = `<li data-checked="true"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
+      cardPileLists[4].appendChild(newCard);
+    });
+  }
+
+  refreshVisualPiles();
+
+  cardPileBtns.forEach(ele => {
     ele.addEventListener("click", event => {
       if (ele.classList.contains("take-pile-1")) {
         if (player1Turn) {
@@ -159,10 +195,11 @@
           player1Turn = true;
         }
       }
+      refreshVisualPiles();
     });
   });
 
-  // cardPiles.forEach(ele => {
+  // cardPileBtns.forEach(ele => {
   //   ele.addEventListener("click", () => {
   //     let card = cardArray.pop();
   //     console.log("card", card);
