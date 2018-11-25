@@ -55,7 +55,7 @@
 
   //turn cardlist into array
 
-  let cardArray = cardList.split("|");
+  let cardArray = cardList.split("|").splice(0, 99);
   let cardPileBtns = document.querySelectorAll(".take-pile-btn");
   let cardPile1Btn = document.querySelector(".take-pile-1");
   let cardPile2Btn = document.querySelector(".take-pile-2");
