@@ -40,8 +40,7 @@
   let cardPileLists = document.querySelectorAll(".pile-list");
   let cardPile1 = {
     number: 0,
-    array: [],
-    class: "take-pile-1"
+    array: []
   }
   let cardPile2 = {
     number: 1,
@@ -68,20 +67,102 @@
   let player1Turn = true;
   console.log(cardArray);
   console.log(cardPileBtns);
-  var ref = firebase.database().ref();
+  const ref = firebase.database().ref();
+  // let activeDraft = ref.child("activeDraftFlag");
 
-  var usersRef = ref.child("newCardArray");
-  usersRef.set(["mountain", "forest"]);
+  // activeDraft.set(true);
 
-  ref.on(
-    "value",
-    function(snapshot) {
-      console.log(snapshot.val());
-    },
-    function(error) {
-      console.log("Error: " + error.code);
-    }
-  );
+  // ref.on(
+  //   "value",
+  //   function(snapshot) {
+  //     console.log(snapshot.val());
+  //   },
+  //   function(error) {
+  //     console.log("Error: " + error.code);
+  //   }
+  // );
+
+  // function getActiveDraftFlag() {
+  //   return activeDraft.once('value').then(function(snapshot) {
+  //     return snapshot.val();
+  //   })
+  // };
+
+  function getData(dataString) {
+    return ref.child(dataString).once('value').then(function(snapshot) {
+      return snapshot.val();
+    })
+  };
+
+  function setData(dataString,value) {
+    ref.child(dataString).set(value)
+  };
+
+  function initializeDraft() {
+    getData("activeDraftFlag").then(function(res) {
+      console.log(res);
+      if(!res) {
+        cardArray = shuffleArray(cardArray).splice(0,100);
+        cardPile1.array.push(cardArray.pop());
+        cardPile2.array.push(cardArray.pop());
+        cardPile3.array.push(cardArray.pop());
+        cardPile4.array.push(cardArray.pop());
+        setData("draftPoolRemaining",cardArray);
+        setData("cardPile1",{number:0,array:cardPile1});
+        setData("cardPile2",{number:1,array:cardPile2});
+        setData("cardPile3",{number:2,array:cardPile3});
+        setData("cardPile4",{number:3,array:cardPile4});
+        setData("player1Pile",[""]);
+        setData("player2Pile",[""]);
+        setData("activeDraftFlag",true);
+        setData("player1Turn",true);
+        refreshVisualPiles();
+      }
+    })
+  };
+    
+
+  initializeDraft();
+
+  // function initializeDraft() {
+  //   let activeFlag = getData("activeDraftFlag");
+  //   if(activeFlag) {
+  //     cardPile1 = getData("cardPile1");
+  //     cardPile2 = getData("cardPile2");
+  //     cardPile3 = getData("cardPile3");
+  //     cardPile4 = getData("cardPile4");
+  //     player1Pile = getData("player1Pile");
+  //     player2Pile = getData("player2Pile");
+  //     cardArray = getData("draftPoolRemaining");
+  //   }
+  //   else {
+  //     cardPile1 = {
+  //       number: 0,
+  //       array: []
+  //     }
+  //     cardPile2 = {
+  //       number: 1,
+  //       array: []
+  //     }
+  //     cardPile3 = {
+  //       number: 2,
+  //       array: []
+  //     }
+  //     cardPile4 = {
+  //       number: 3,
+  //       array: []
+  //     }
+  //     player1Pile = {
+  //       number: 4,
+  //       array: []
+  //     }
+  //     player2Pile = {
+  //       number: 5,
+  //       array: []
+  //     }
+  //     cardArray = shuffleArray(cardArray).splice(0,99);
+  //   }
+  // };
 
   //shuffle Array
   function shuffleArray(array) {
@@ -94,14 +175,14 @@
     return array;
   }
 
-  cardArray = shuffleArray(cardArray).splice(0,99);
+  // cardArray = shuffleArray(cardArray).splice(0,99);
 
   cardCount.innerHTML = cardsLeft + " Cards Left";
 
-  cardPile1.array.push(cardArray.pop());
-  cardPile2.array.push(cardArray.pop());
-  cardPile3.array.push(cardArray.pop());
-  cardPile4.array.push(cardArray.pop());
+  // cardPile1.array.push(cardArray.pop());
+  // cardPile2.array.push(cardArray.pop());
+  // cardPile3.array.push(cardArray.pop());
+  // cardPile4.array.push(cardArray.pop());
 
   function populatePile(pile) {
     pile.array.forEach(function(card) {
@@ -126,27 +207,42 @@
     populatePile(player2Pile);
   }
 
-  refreshVisualPiles();
+  // refreshVisualPiles();
 
   function pickPile(cardPile) {
-    if(player1Turn) {
-      player1Pile.array = player1Pile.array.concat(cardPile.array);
-      cardPile.array = [];
-      cardPile1.array.push(cardArray.pop());
-      cardPile2.array.push(cardArray.pop());
-      cardPile3.array.push(cardArray.pop());
-      cardPile4.array.push(cardArray.pop());
-    }
-    else {
-      player2Pile.array = player2Pile.array.concat(cardPile.array);
-      cardPile.array = [];
-      cardPile1.array.push(cardArray.pop());
-      cardPile2.array.push(cardArray.pop());
-      cardPile3.array.push(cardArray.pop());
-      cardPile4.array.push(cardArray.pop());
-    }
-    player1Turn = !player1Turn;
-  }
+    getData("player1Turn").then(function(res) {
+      if(res) {
+        player1Pile.array = player1Pile.array.concat(cardPile.array);
+        setData("player1Pile",player1Pile);
+        cardPile.array = [];
+        cardPile1.array.push(cardArray.pop());
+        setData("cardPile1",cardPile1);
+        cardPile2.array.push(cardArray.pop());
+        setData("cardPile2",cardPile2);
+        cardPile3.array.push(cardArray.pop());
+        setData("cardPile3",cardPile3);
+        cardPile4.array.push(cardArray.pop());
+        setData("cardPile4",cardPile4);
+        setData("draftPoolRemaining",cardArray);
+      }
+      else {
+        player2Pile.array = player2Pile.array.concat(cardPile.array);
+        setData("player2Pile",player2Pile);
+        cardPile.array = [];
+        cardPile1.array.push(cardArray.pop());
+        setData("cardPile1",cardPile1);
+        cardPile2.array.push(cardArray.pop());
+        setData("cardPile2",cardPile2);
+        cardPile3.array.push(cardArray.pop());
+        setData("cardPile3",cardPile3);
+        cardPile4.array.push(cardArray.pop());
+        setData("cardPile4",cardPile4);
+        setData("draftPoolRemaining",cardArray);
+      }
+      player1Turn = !player1Turn;
+      setData("player1Turn",player1Turn);
+    });
+  };
 
   cardPileBtns.forEach(ele => {
     ele.addEventListener("click", event => {
@@ -167,22 +263,4 @@
       refreshVisualPiles();
     });
   });
-
-  // cardPileBtns.forEach(ele => {
-  //   ele.addEventListener("click", () => {
-  //     let card = cardArray.pop();
-  //     console.log("card", card);
-  //     cardsLeft = cardArray.length;
-  //     cardCount.innerHTML = cardsLeft + " Cards Left";
-  //   });
-  // });
 })();
-
-//Alex's work
-
-// cardArray.forEach(ele => {
-//   let newCard = document.createElement("li");
-//   newCard.innerHTML = `<li data-checked="true"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${ele}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${ele}&amp;set=&amp;type=card" /></a></li>`;
-//   testStack.append(newCard);
-// });
-//
