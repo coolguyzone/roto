@@ -144,10 +144,14 @@ img {
   height: 300px;
 }
 
+.card-pile-container {
+  margin: 20px;
+}
+
 .card-pile {
   border: 2px solid white;
   height: 1000px;
-  margin: 20px;
+  margin: 0;
 }
 
 .card-count {
@@ -159,6 +163,11 @@ img {
 /* buttons */
 .take-pile-btn {
   display: block;
+}
+
+.reset-draft-btn {
+  display: block;
+  margin: auto;
 }
 
 .pile-list {
