@@ -31,13 +31,13 @@
   function shuffleArray(array) {
     for (var i = array.length -1; i>0; i--) {
       var j = Math.floor(Math.random() * (i+1));
+
       var temp = array[i];
       array[i] = array[j];
       array[j] = temp;
     }
     return array;
   };
-
   function refreshVisualPiles() {
     getData('draftPoolRemaining').then(function(value) {
       cardCount.innerHTML = value.length + " Cards Left";
@@ -79,6 +79,7 @@
     ref.child('player1Pile').set({number:4});
     ref.child('player2Pile').set({number:5});
   };
+
 
   function initializeNewDraft() {
     createNewDraftList();
@@ -130,7 +131,7 @@
       ref.child('player1Turn').set(!res);
     });
   };
-
+  
   // Element Functions
   function populatePile(pile) {
     getData(pile).then(function(value) {
@@ -150,6 +151,7 @@
     refreshVisualPiles();
   };
     
+
   resetDraftBtn.addEventListener("click", event => {
     initializeNewDraft();
   });
@@ -170,7 +172,6 @@
           pickPile('cardPile4')
           break;
       }
-      refreshVisualPiles();
     });
   });
 })();
