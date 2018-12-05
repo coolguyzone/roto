@@ -23,120 +23,134 @@
 
   // General Functions
   function getData(dataString) {
-    return ref.child(dataString).once('value').then(function(snapshot) {
-      return snapshot.val();
-    })
-  };
+    return ref
+      .child(dataString)
+      .once("value")
+      .then(function(snapshot) {
+        return snapshot.val();
+      });
+  }
 
   function shuffleArray(array) {
-    for (var i = array.length -1; i>0; i--) {
-      var j = Math.floor(Math.random() * (i+1));
+    for (var i = array.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
 
       var temp = array[i];
       array[i] = array[j];
       array[j] = temp;
     }
     return array;
-  };
+  }
   function refreshVisualPiles() {
-    getData('draftPoolRemaining').then(function(value) {
+    getData("draftPoolRemaining").then(function(value) {
       cardCount.innerHTML = value.length + " Cards Left";
     });
     cardPileLists.forEach(function(list) {
       list.innerHTML = "";
     });
 
-    populatePile('cardPile1');
-    populatePile('cardPile2');
-    populatePile('cardPile3');
-    populatePile('cardPile4');
-    populatePile('player1Pile');
-    populatePile('player2Pile');
-  };
+    populatePile("cardPile1");
+    populatePile("cardPile2");
+    populatePile("cardPile3");
+    populatePile("cardPile4");
+    populatePile("player1Pile");
+    populatePile("player2Pile");
+  }
 
   // Initialize Functions
   function createNewDraftList() {
-    getData('fullCubeList').then(function(value) {
-      let newDraftList = shuffleArray(value).splice(0,100);
-      ref.child('draftPoolRemaining').set(newDraftList);
+    getData("fullCubeList").then(function(value) {
+      let newDraftList = shuffleArray(value).splice(0, 100);
+      ref.child("draftPoolRemaining").set(newDraftList);
     });
-  };
+  }
 
   function replacePilesWithTopCard() {
-    getData('draftPoolRemaining').then(function(draftPool) {
+    getData("draftPoolRemaining").then(function(draftPool) {
       let tempDraftPool = draftPool;
-      for(let i=1;i<5;i++) {
+      for (let i = 1; i < 5; i++) {
         let tempCardPile = [];
         tempCardPile.push(tempDraftPool.pop());
-        ref.child('cardPile'+i).child('array').set(tempCardPile);
+        ref
+          .child("cardPile" + i)
+          .child("array")
+          .set(tempCardPile);
       }
-      ref.child('draftPoolRemaining').set(tempDraftPool);
+      ref.child("draftPoolRemaining").set(tempDraftPool);
     });
-  };
+  }
 
   function resetPiles() {
     replacePilesWithTopCard();
-    ref.child('player1Pile').set({number:4});
-    ref.child('player2Pile').set({number:5});
-  };
-
+    ref.child("player1Pile").set({ number: 4 });
+    ref.child("player2Pile").set({ number: 5 });
+  }
 
   function initializeNewDraft() {
     createNewDraftList();
     resetPiles();
-    ref.child('player1Turn').set(true);
+    ref.child("player1Turn").set(true);
     refreshVisualPiles();
-  };
+  }
 
   // Draft Functions
   function addCardsToPiles(cardPile) {
-    getData('draftPoolRemaining').then(function(draftPool) {
+    getData("draftPoolRemaining").then(function(draftPool) {
       let tempDraftPool = draftPool;
-      for(let i=1;i<5;i++) {
-        getData('cardPile'+i).then(function(pile) {
-          let tempCardPile = []
-          if(cardPile !== 'cardPile'+i) {
+      for (let i = 1; i < 5; i++) {
+        getData("cardPile" + i).then(function(pile) {
+          let tempCardPile = [];
+          if (cardPile !== "cardPile" + i) {
             tempCardPile = pile.array;
           }
           tempCardPile.push(tempDraftPool.pop());
-          ref.child('cardPile'+i).child('array').set(tempCardPile);
-          ref.child('draftPoolRemaining').set(tempDraftPool);
+          ref
+            .child("cardPile" + i)
+            .child("array")
+            .set(tempCardPile);
+          ref.child("draftPoolRemaining").set(tempDraftPool);
         });
-      };
+      }
     });
-  };
+  }
 
-  function addPileToPlayerPool(playerPile,cardPile) {
+  function addPileToPlayerPool(playerPile, cardPile) {
     getData(cardPile).then(function(pile) {
       getData(playerPile).then(function(pickedCards) {
-        if(pickedCards.array === undefined) {
-          ref.child(playerPile).child('array').set(pile.array);
+        if (pickedCards.array === undefined) {
+          ref
+            .child(playerPile)
+            .child("array")
+            .set(pile.array);
+        } else {
+          ref
+            .child(playerPile)
+            .child("array")
+            .set(pickedCards.array.concat(pile.array));
         }
-        else {
-          ref.child(playerPile).child('array').set(pickedCards.array.concat(pile.array));
-        }
+        refreshVisualPiles();
       });
     });
-  };
+  }
 
   function pickPile(cardPile) {
     getData("player1Turn").then(function(res) {
-      if(res) {
-        addPileToPlayerPool('player1Pile',cardPile);
-      }
-      else {
-        addPileToPlayerPool('player2Pile',cardPile);
+      if (res) {
+        addPileToPlayerPool("player1Pile", cardPile);
+      } else {
+        addPileToPlayerPool("player2Pile", cardPile);
       }
       addCardsToPiles(cardPile);
-      ref.child('player1Turn').set(!res);
+      ref.child("player1Turn").set(!res);
     });
-  };
-  
+    refreshVisualPiles();
+  }
+
   // Element Functions
   function populatePile(pile) {
     getData(pile).then(function(value) {
       console.log(value);
-      if(value.array !== undefined) {
+      if (value.array !== undefined) {
         value.array.forEach(function(card) {
           let newCard = document.createElement("li");
           newCard.innerHTML = `<li data-checked="true"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
@@ -144,13 +158,12 @@
         });
       }
     });
-  };
+  }
 
   // Events
   window.onload = function() {
     refreshVisualPiles();
   };
-    
 
   resetDraftBtn.addEventListener("click", event => {
     initializeNewDraft();
@@ -158,18 +171,18 @@
 
   cardPileBtns.forEach(ele => {
     ele.addEventListener("click", event => {
-      switch(ele.classList[1]) {
-        case "take-pile-1": 
-          pickPile('cardPile1')
+      switch (ele.classList[1]) {
+        case "take-pile-1":
+          pickPile("cardPile1");
           break;
-        case "take-pile-2": 
-          pickPile('cardPile2')
+        case "take-pile-2":
+          pickPile("cardPile2");
           break;
-        case "take-pile-3": 
-          pickPile('cardPile3')
+        case "take-pile-3":
+          pickPile("cardPile3");
           break;
-        case "take-pile-4": 
-          pickPile('cardPile4')
+        case "take-pile-4":
+          pickPile("cardPile4");
           break;
       }
     });
