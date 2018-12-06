@@ -200,7 +200,7 @@
   function disableEmptyPileButtons() {
     for(let i=1;i<5;i++) {
       getData('cardPile'+i).then(function(pile) {
-=        if(pile.array.length === 1 && pile.array[0] === " ") {
+        if(pile.array.length === 1 && pile.array[0] === " ") {
           document.querySelector(".take-pile-"+i).disabled = true;
         }
       })
