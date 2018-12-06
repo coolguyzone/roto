@@ -43,19 +43,6 @@
     return array;
   }
 
-  function refreshCardsLeft() {
-    getData("draftPoolRemaining").then(function(value) {
-      cardCount.innerHTML = value.length + " Cards Left";
-    });
-    getData("player1Turn").then(function(value) {
-      if (value) {
-        playerTurn.innerHTML = "Player 1's Pick";
-      } else {
-        playerTurn.innerHTML = "Player 2's Pick";
-      }
-    });
-  }
-
   function refreshVisualPiles(cardsRemaining) {
     cardPileLists.forEach(function(list) {
       list.innerHTML = "";
@@ -196,6 +183,13 @@
     } else {
       cardCount.innerHTML = "No Cards Left";
     }
+    getData("player1Turn").then(function(value) {
+      if (value) {
+        playerTurn.innerHTML = "Player 1's Pick";
+      } else {
+        playerTurn.innerHTML = "Player 2's Pick";
+      }
+    });
   }
 
   // Events

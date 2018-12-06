@@ -136,7 +136,7 @@ img {
 }
 
 .card-piles {
-  margin-top: 150px;
+  margin-top: 30px;
 }
 
 .card-piles li img {
@@ -150,8 +150,11 @@ img {
 
 .card-pile {
   border: 2px solid white;
-  height: 1000px;
+  min-height: 310px;
   margin: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
 .card-count {
