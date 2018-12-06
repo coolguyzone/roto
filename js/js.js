@@ -168,7 +168,7 @@
       if (value.array !== undefined) {
         value.array.forEach(function(card) {
           let newCard = document.createElement("li");
-          newCard.innerHTML = `<li data-checked="true"><a href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
+          newCard.innerHTML = `<li data-checked="true"><a target="_blank" href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
           cardPileLists[value.number].appendChild(newCard);
         });
       }
