@@ -90,6 +90,7 @@
   function initializeNewDraft() {
     createNewDraftList();
     resetPiles();
+    enableAllButtons();
     ref.child("player1Turn").set(true);
   }
 
@@ -110,6 +111,7 @@
               tempCardPile.push(tempDraftPool.pop());
             } else {
               tempCardPile = [" "];
+              document.querySelector(".take-pile-"+i).disabled = true;
             }
           }
           ref
@@ -146,9 +148,6 @@
   }
 
   function pickPile(cardPile) {
-    // getData("draftPoolRemaining").then(function(draftPool) {
-    //   if(draftPool.length)
-    // })
     getData("player1Turn").then(function(res) {
       if (res) {
         addPileToPlayerPool("player1Pile", cardPile);
@@ -166,7 +165,6 @@
   // Element Functions
   function populatePile(pile) {
     getData(pile).then(function(value) {
-      console.log(value);
       if (value.array !== undefined) {
         value.array.forEach(function(card) {
           let newCard = document.createElement("li");
@@ -192,11 +190,28 @@
     });
   }
 
+  function enableAllButtons() {
+    cardPile1Btn.disabled = false;
+    cardPile2Btn.disabled = false;
+    cardPile3Btn.disabled = false;
+    cardPile4Btn.disabled = false;
+  }
+
+  function disableEmptyPileButtons() {
+    for(let i=1;i<5;i++) {
+      getData('cardPile'+i).then(function(pile) {
+=        if(pile.array.length === 1 && pile.array[0] === " ") {
+          document.querySelector(".take-pile-"+i).disabled = true;
+        }
+      })
+    }
+  }
+
   // Events
   window.onload = function() {
     getData("draftPoolRemaining").then(function(draftPool) {
       refreshVisualPiles(draftPool);
-      console.log(draftPool);
+      disableEmptyPileButtons();
     })
   };
 
