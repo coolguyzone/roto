@@ -17,6 +17,7 @@
   let cardPiles = document.querySelectorAll(".card-pile");
   let cardPileLists = document.querySelectorAll(".pile-list");
   let cardCount = document.querySelector(".card-count");
+  let playerTurn = document.querySelector(".player-turn");
 
   // Firebase Variables
   const ref = firebase.database().ref();
@@ -44,6 +45,13 @@
   function refreshVisualPiles() {
     getData("draftPoolRemaining").then(function(value) {
       cardCount.innerHTML = value.length + " Cards Left";
+    });
+    getData("player1Turn").then(function(value) {
+      if (value) {
+        playerTurn.innerHTML = "Player 1's Pick";
+      } else {
+        playerTurn.innerHTML = "Player 2's Pick";
+      }
     });
     cardPileLists.forEach(function(list) {
       list.innerHTML = "";
