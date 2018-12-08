@@ -22,6 +22,35 @@
   // Firebase Variables
   const ref = firebase.database().ref();
 
+  //Firebase Listeners
+  function refreshVisualPilesListener(dataString) {
+    ref.child(dataString).on("value", function(snapshot) {
+      let pile = snapshot.val();
+      if(pile.array !== undefined) {
+        populatePile(pile);
+      }
+    });
+  }
+  ref.child("draftPoolRemaining").on("value", function(snapshot) {
+    let draftPool = snapshot.val();
+    if(draftPool !== null) {
+      if(draftPool.length === 100) {
+      replacePilesWithTopCard();
+      }
+      cardCount.innerHTML = draftPool.length + " Cards Left";
+    } else {
+      cardCount.innerHTML = "No Cards Left";
+    }
+  });
+  ref.child("player1Turn").on("value", function(snapshot) {
+    let player1Turn = snapshot.val();
+    if (player1Turn) {
+      playerTurn.innerHTML = "Player 1's Pick";
+    } else {
+      playerTurn.innerHTML = "Player 2's Pick";
+    }
+  });
+
   // General Functions
   function getData(dataString) {
     return ref
@@ -41,20 +70,6 @@
       array[j] = temp;
     }
     return array;
-  }
-
-  function refreshVisualPiles(cardsRemaining) {
-    cardPileLists.forEach(function(list) {
-      list.innerHTML = "";
-    });
-
-    populatePile("cardPile1");
-    populatePile("cardPile2");
-    populatePile("cardPile3");
-    populatePile("cardPile4");
-    populatePile("player1Pile");
-    populatePile("player2Pile");
-    populateCardsRemaining(cardsRemaining);
   }
 
   // Initialize Functions
@@ -77,12 +92,12 @@
           .set(tempCardPile);
       }
       ref.child("draftPoolRemaining").set(tempDraftPool);
-      refreshVisualPiles(tempDraftPool);
     });
   }
 
   function resetPiles() {
-    replacePilesWithTopCard();
+    clearHTMLPiles();
+    clearHTMLPlayerPiles();
     ref.child("player1Pile").set({ number: 4 });
     ref.child("player2Pile").set({ number: 5 });
   }
@@ -95,6 +110,40 @@
   }
 
   // Draft Functions
+  function pickPileButtonClick(ele) {
+    getData("draftPoolRemaining").then(function(draftPool) {
+      if(draftPool !== null) {
+        clearHTMLPiles();
+      }
+      switch (ele.classList[1]) {
+          case "take-pile-1":
+            if(draftPool === null) {
+              cardPileLists[0].innerHTML = "";
+            }
+            pickPile("cardPile1");
+            break;
+          case "take-pile-2":
+            if(draftPool === null) {
+              cardPileLists[1].innerHTML = "";
+            }
+            pickPile("cardPile2");
+            break;
+          case "take-pile-3":
+            if(draftPool === null) {
+              cardPileLists[2].innerHTML = "";
+            }
+            pickPile("cardPile3");
+            break;
+          case "take-pile-4":
+            if(draftPool === null) {
+              cardPileLists[3].innerHTML = "";
+            }
+            pickPile("cardPile4");
+            break;
+        }
+    });
+  }
+
   function addCardsToPiles(cardPile) {
     getData("draftPoolRemaining").then(function(draftPool) {
       let tempDraftPool = draftPool;
@@ -140,9 +189,6 @@
             .child("array")
             .set(pickedCards.array.concat(pile.array));
         }
-        getData("draftPoolRemaining").then(function(draftPool) {
-        refreshVisualPiles(draftPool);
-        })
       });
     });
   }
@@ -150,45 +196,39 @@
   function pickPile(cardPile) {
     getData("player1Turn").then(function(res) {
       if (res) {
+        cardPileLists[4].innerHTML = "";
         addPileToPlayerPool("player1Pile", cardPile);
       } else {
+        cardPileLists[5].innerHTML = "";
         addPileToPlayerPool("player2Pile", cardPile);
       }
       addCardsToPiles(cardPile);
       ref.child("player1Turn").set(!res);
     });
-    getData("draftPoolRemaining").then(function(draftPool) {
-      refreshVisualPiles(draftPool);
-    })
   }
 
-  // Element Functions
+  // Update HTML Element Functions
   function populatePile(pile) {
-    getData(pile).then(function(value) {
-      if (value.array !== undefined) {
-        value.array.forEach(function(card) {
-          let newCard = document.createElement("li");
-          newCard.innerHTML = `<li data-checked="true"><a target="_blank" href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
-          cardPileLists[value.number].appendChild(newCard);
-        });
-      }
-    });
+    if (pile.array !== undefined) {
+      pile.array.forEach(function(card) {
+        let newCard = document.createElement("li");
+        newCard.innerHTML = `<li data-checked="true"><a target="_blank" href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
+        cardPileLists[pile.number].appendChild(newCard);
+      });
+    }
   }
 
-  function populateCardsRemaining(cardsRemaining) {
-    if(cardsRemaining !== null) {
-      cardCount.innerHTML = cardsRemaining.length + " Cards Left";
-    } else {
-      cardCount.innerHTML = "No Cards Left";
+  function clearHTMLPiles() {
+    for (let i = 0; i < 4; i++) {
+      cardPileLists[i].innerHTML = "";
     }
-    getData("player1Turn").then(function(value) {
-      if (value) {
-        playerTurn.innerHTML = "Player 1's Pick";
-      } else {
-        playerTurn.innerHTML = "Player 2's Pick";
-      }
-    });
   }
+
+  function clearHTMLPlayerPiles() {
+    for(let i = 4; i < 6; i++) {
+      cardPileLists[i].innerHTML = "";
+    }
+  } 
 
   function enableAllButtons() {
     cardPile1Btn.disabled = false;
@@ -207,12 +247,15 @@
     }
   }
 
-  // Events
+  // HTML Events
   window.onload = function() {
-    getData("draftPoolRemaining").then(function(draftPool) {
-      refreshVisualPiles(draftPool);
-      disableEmptyPileButtons();
-    })
+    disableEmptyPileButtons();
+    refreshVisualPilesListener("cardPile1");
+    refreshVisualPilesListener("cardPile2");
+    refreshVisualPilesListener("cardPile3");
+    refreshVisualPilesListener("cardPile4");
+    refreshVisualPilesListener("player1Pile");
+    refreshVisualPilesListener("player2Pile");
   };
 
   resetDraftBtn.addEventListener("click", event => {
@@ -221,20 +264,8 @@
 
   cardPileBtns.forEach(ele => {
     ele.addEventListener("click", event => {
-      switch (ele.classList[1]) {
-        case "take-pile-1":
-          pickPile("cardPile1");
-          break;
-        case "take-pile-2":
-          pickPile("cardPile2");
-          break;
-        case "take-pile-3":
-          pickPile("cardPile3");
-          break;
-        case "take-pile-4":
-          pickPile("cardPile4");
-          break;
-      }
+      pickPileButtonClick(ele);
     });
   });
+
 })();
