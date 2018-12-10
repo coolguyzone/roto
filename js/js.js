@@ -72,10 +72,43 @@
     return array;
   }
 
+  //Upload Cube Functions TODO: allow cube uploads
+    function getCardFromApi(cardName) {
+    return axios.get("https://api.magicthegathering.io/v1/cards?name="+cardName).then(function(data) {
+      let cardData = data.data.cards[0];
+      delete cardData.artist;
+      delete cardData.flavor;
+      delete cardData.foreignNames;
+      delete cardData.layout;
+      delete cardData.legalities;
+      delete cardData.number;
+      delete cardData.printings;
+      delete cardData.rarity;
+      delete cardData.releaseDate;
+      delete cardData.set;
+      delete cardData.setName;
+      delete cardData.source;
+      return cardData;
+    });
+  }
+
+  function deleteCubeList(cubeName) {
+    ref.child(cubeName).remove();
+  }
+
+  function createCubeList(cubeName,cubeArray) {
+    cubeArray.forEach(function(card) {
+      getCardFromApi(card).then(function(cardObj) {
+        ref.child(cubeName).child(card).set(cardObj);
+      });
+    });
+  }
+
   // Initialize Functions
   function createNewDraftList() {
-    getData("fullCubeList").then(function(value) {
-      let newDraftList = shuffleArray(value).splice(0, 100);
+    getData("newCube").then(function(value) {
+      let newDraftList = Object.values(value);
+      newDraftList = shuffleArray(newDraftList).splice(0, 100);
       ref.child("draftPoolRemaining").set(newDraftList);
     });
   }
@@ -103,7 +136,7 @@
   }
 
   function initializeNewDraft() {
-    createNewDraftList();
+    createNewDraftList2();
     resetPiles();
     enableAllButtons();
     ref.child("player1Turn").set(true);
@@ -159,7 +192,7 @@
             if(draftPool !== null) {
               tempCardPile.push(tempDraftPool.pop());
             } else {
-              tempCardPile = [" "];
+              tempCardPile = [{name: " "}];
               document.querySelector(".take-pile-"+i).disabled = true;
             }
           }
@@ -212,7 +245,7 @@
     if (pile.array !== undefined) {
       pile.array.forEach(function(card) {
         let newCard = document.createElement("li");
-        newCard.innerHTML = `<li data-checked="true"><a target="_blank" href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card}&amp;set=&amp;type=card"></a></li>`;
+        newCard.innerHTML = `<li data-checked="true"><a target="_blank" href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card.name}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card.name}&amp;set=&amp;type=card"></a></li>`;
         cardPileLists[pile.number].appendChild(newCard);
       });
     }
@@ -240,7 +273,7 @@
   function disableEmptyPileButtons() {
     for(let i=1;i<5;i++) {
       getData('cardPile'+i).then(function(pile) {
-        if(pile.array.length === 1 && pile.array[0] === " ") {
+        if(pile.array.length === 1 && pile.array[0].name === " ") {
           document.querySelector(".take-pile-"+i).disabled = true;
         }
       })
