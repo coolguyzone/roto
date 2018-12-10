@@ -136,7 +136,7 @@
   }
 
   function initializeNewDraft() {
-    createNewDraftList2();
+    createNewDraftList();
     resetPiles();
     enableAllButtons();
     ref.child("player1Turn").set(true);
