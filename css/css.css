@@ -175,8 +175,12 @@ img {
   display: block;
 }
 
+.top-btn-row {
+  text-align: center;
+  margin-top: 20px;
+}
+
 .reset-draft-btn {
-  display: block;
   margin: auto;
 }
 

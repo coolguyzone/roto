@@ -1,3 +1,6 @@
+let privateDraft = false;
+let privateDraftDB;
+
 (function() {
   "use strict";
 
@@ -18,6 +21,7 @@
   let cardPileLists = document.querySelectorAll(".pile-list");
   let cardCount = document.querySelector(".card-count");
   let playerTurn = document.querySelector(".player-turn");
+  let newPrivateDraftBtn = document.querySelector(".new-private-draft-btn");
 
   // Firebase Variables
   const ref = firebase.database().ref();
@@ -26,22 +30,54 @@
   function refreshVisualPilesListener(dataString) {
     ref.child(dataString).on("value", function(snapshot) {
       let pile = snapshot.val();
-      if(pile.array !== undefined) {
+      console.log(pile);
+      if (pile.array !== undefined) {
         populatePile(pile);
       }
     });
   }
+  //privateDraft
+  function refreshVisualPrivatePilesListener(dbName, dataString) {
+    ref
+      .child(dbName)
+      .child(dataString)
+      .on("value", function(snapshot) {
+        let pile = snapshot.val();
+        console.log(pile);
+        if (pile.array !== undefined) {
+          populatePile(pile);
+        }
+      });
+  }
+
   ref.child("draftPoolRemaining").on("value", function(snapshot) {
     let draftPool = snapshot.val();
-    if(draftPool !== null) {
-      if(draftPool.length === 100) {
-      replacePilesWithTopCard();
+    if (draftPool !== null) {
+      if (draftPool.length === 100) {
+        replacePilesWithTopCard();
       }
       cardCount.innerHTML = draftPool.length + " Cards Left";
     } else {
       cardCount.innerHTML = "No Cards Left";
     }
   });
+
+  //privateDraft
+  if (privateDraft) {
+    ref.child(privateDraftDB).on("value", function(snapshot) {
+      console.log("yaaa", snapshot.val().draftPoolRemaining);
+      let draftPool = snapshot.val().draftPoolRemaining;
+      if (draftPool !== null) {
+        if (draftPool.length === 100) {
+          replacePilesWithTopCard();
+        }
+        cardCount.innerHTML = draftPool.length + " Cards Left";
+      } else {
+        cardCount.innerHTML = "No Cards Left";
+      }
+    });
+  }
+
   ref.child("player1Turn").on("value", function(snapshot) {
     let player1Turn = snapshot.val();
     if (player1Turn) {
@@ -73,33 +109,38 @@
   }
 
   //Upload Cube Functions TODO: allow cube uploads
-    function getCardFromApi(cardName) {
-    return axios.get("https://api.magicthegathering.io/v1/cards?name="+cardName).then(function(data) {
-      let cardData = data.data.cards[0];
-      delete cardData.artist;
-      delete cardData.flavor;
-      delete cardData.foreignNames;
-      delete cardData.layout;
-      delete cardData.legalities;
-      delete cardData.number;
-      delete cardData.printings;
-      delete cardData.rarity;
-      delete cardData.releaseDate;
-      delete cardData.set;
-      delete cardData.setName;
-      delete cardData.source;
-      return cardData;
-    });
+  function getCardFromApi(cardName) {
+    return axios
+      .get("https://api.magicthegathering.io/v1/cards?name=" + cardName)
+      .then(function(data) {
+        let cardData = data.data.cards[0];
+        delete cardData.artist;
+        delete cardData.flavor;
+        delete cardData.foreignNames;
+        delete cardData.layout;
+        delete cardData.legalities;
+        delete cardData.number;
+        delete cardData.printings;
+        delete cardData.rarity;
+        delete cardData.releaseDate;
+        delete cardData.set;
+        delete cardData.setName;
+        delete cardData.source;
+        return cardData;
+      });
   }
 
   function deleteCubeList(cubeName) {
     ref.child(cubeName).remove();
   }
 
-  function createCubeList(cubeName,cubeArray) {
+  function createCubeList(cubeName, cubeArray) {
     cubeArray.forEach(function(card) {
       getCardFromApi(card).then(function(cardObj) {
-        ref.child(cubeName).child(card).set(cardObj);
+        ref
+          .child(cubeName)
+          .child(card)
+          .set(cardObj);
       });
     });
   }
@@ -110,6 +151,16 @@
       let newDraftList = Object.values(value);
       newDraftList = shuffleArray(newDraftList).splice(0, 100);
       ref.child("draftPoolRemaining").set(newDraftList);
+    });
+  }
+
+  function createNewPrivateDraftList(dbName) {
+    privateDraft = true;
+    privateDraftDB = dbName;
+    getData("newCube").then(function(value) {
+      let newDraftList = Object.values(value);
+      newDraftList = shuffleArray(newDraftList).splice(0, 100);
+      ref.child(dbName).update({ draftPoolRemaining: newDraftList });
     });
   }
 
@@ -128,11 +179,44 @@
     });
   }
 
+  //private
+  function replacePrivatePilesWithTopCard(dbName) {
+    getData(dbName).then(function(draftPool) {
+      let privateDraftPool = draftPool.draftPoolRemaining;
+      let tempDraftPool = privateDraftPool;
+      for (let i = 1; i < 5; i++) {
+        let tempCardPile = [];
+        tempCardPile.push(tempDraftPool.pop());
+        ref
+          .child(dbName)
+          .child("cardPile" + i)
+          .child("array")
+          .set(tempCardPile);
+        ref
+          .child(dbName)
+          .child("cardPile" + i)
+          .child("number")
+          .set(i - 1);
+      }
+      ref
+        .child(dbName)
+        .child("draftPoolRemaining")
+        .set(tempDraftPool);
+    });
+  }
+
   function resetPiles() {
     clearHTMLPiles();
     clearHTMLPlayerPiles();
     ref.child("player1Pile").set({ number: 4 });
     ref.child("player2Pile").set({ number: 5 });
+  }
+
+  function resetPrivatePiles(dbName) {
+    clearHTMLPiles();
+    clearHTMLPlayerPiles();
+    ref.child(dbName).update({ player1Pile: { number: 4 } });
+    ref.child(dbName).update({ player2Pile: { number: 5 } });
   }
 
   function initializeNewDraft() {
@@ -142,38 +226,63 @@
     ref.child("player1Turn").set(true);
   }
 
+  function initializeNewPrivateDraft(dbName) {
+    createNewPrivateDraftList(dbName);
+    resetPrivatePiles(dbName);
+    enableAllButtons();
+    ref.child(dbName).update({ player1Turn: true });
+    ref.child(privateDraftDB).on("value", function(snapshot) {
+      let draftPool = snapshot.val().draftPoolRemaining;
+      if (draftPool !== null) {
+        if (draftPool.length === 100) {
+          replacePrivatePilesWithTopCard(dbName);
+        }
+        cardCount.innerHTML = draftPool.length + " Cards Left";
+      } else {
+        cardCount.innerHTML = "No Cards Left";
+      }
+    });
+
+    refreshVisualPrivatePilesListener(dbName, "cardPile1");
+    refreshVisualPrivatePilesListener(dbName, "cardPile2");
+    refreshVisualPrivatePilesListener(dbName, "cardPile3");
+    refreshVisualPrivatePilesListener(dbName, "cardPile4");
+    refreshVisualPrivatePilesListener(dbName, "player1Pile");
+    refreshVisualPrivatePilesListener(dbName, "player2Pile");
+  }
+
   // Draft Functions
   function pickPileButtonClick(ele) {
     getData("draftPoolRemaining").then(function(draftPool) {
-      if(draftPool !== null) {
+      if (draftPool !== null) {
         clearHTMLPiles();
       }
       switch (ele.classList[1]) {
-          case "take-pile-1":
-            if(draftPool === null) {
-              cardPileLists[0].innerHTML = "";
-            }
-            pickPile("cardPile1");
-            break;
-          case "take-pile-2":
-            if(draftPool === null) {
-              cardPileLists[1].innerHTML = "";
-            }
-            pickPile("cardPile2");
-            break;
-          case "take-pile-3":
-            if(draftPool === null) {
-              cardPileLists[2].innerHTML = "";
-            }
-            pickPile("cardPile3");
-            break;
-          case "take-pile-4":
-            if(draftPool === null) {
-              cardPileLists[3].innerHTML = "";
-            }
-            pickPile("cardPile4");
-            break;
-        }
+        case "take-pile-1":
+          if (draftPool === null) {
+            cardPileLists[0].innerHTML = "";
+          }
+          pickPile("cardPile1");
+          break;
+        case "take-pile-2":
+          if (draftPool === null) {
+            cardPileLists[1].innerHTML = "";
+          }
+          pickPile("cardPile2");
+          break;
+        case "take-pile-3":
+          if (draftPool === null) {
+            cardPileLists[2].innerHTML = "";
+          }
+          pickPile("cardPile3");
+          break;
+        case "take-pile-4":
+          if (draftPool === null) {
+            cardPileLists[3].innerHTML = "";
+          }
+          pickPile("cardPile4");
+          break;
+      }
     });
   }
 
@@ -185,20 +294,18 @@
           let tempCardPile = [];
           if (cardPile !== "cardPile" + i) {
             tempCardPile = pile.array;
-            if(draftPool !== null) {
+            if (draftPool !== null) {
               tempCardPile.push(tempDraftPool.pop());
             }
           } else {
-            if(draftPool !== null) {
+            if (draftPool !== null) {
               tempCardPile.push(tempDraftPool.pop());
             } else {
-              tempCardPile = [{name: " "}];
-              document.querySelector(".take-pile-"+i).disabled = true;
+              tempCardPile = [{ name: " " }];
+              document.querySelector(".take-pile-" + i).disabled = true;
             }
           }
-          ref
-            .child("draftPoolRemaining")
-            .set(tempDraftPool);
+          ref.child("draftPoolRemaining").set(tempDraftPool);
           ref
             .child("cardPile" + i)
             .child("array")
@@ -245,7 +352,11 @@
     if (pile.array !== undefined) {
       pile.array.forEach(function(card) {
         let newCard = document.createElement("li");
-        newCard.innerHTML = `<li data-checked="true"><a target="_blank" href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${card.name}"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${card.name}&amp;set=&amp;type=card"></a></li>`;
+        newCard.innerHTML = `<li data-checked="true"><a target="_blank" href="http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${
+          card.name
+        }"><img src="http://gatherer.wizards.com/Handlers/Image.ashx?name=${
+          card.name
+        }&amp;set=&amp;type=card"></a></li>`;
         cardPileLists[pile.number].appendChild(newCard);
       });
     }
@@ -258,10 +369,10 @@
   }
 
   function clearHTMLPlayerPiles() {
-    for(let i = 4; i < 6; i++) {
+    for (let i = 4; i < 6; i++) {
       cardPileLists[i].innerHTML = "";
     }
-  } 
+  }
 
   function enableAllButtons() {
     cardPile1Btn.disabled = false;
@@ -271,13 +382,18 @@
   }
 
   function disableEmptyPileButtons() {
-    for(let i=1;i<5;i++) {
-      getData('cardPile'+i).then(function(pile) {
-        if(pile.array.length === 1 && pile.array[0].name === " ") {
-          document.querySelector(".take-pile-"+i).disabled = true;
+    for (let i = 1; i < 5; i++) {
+      getData("cardPile" + i).then(function(pile) {
+        if (pile.array.length === 1 && pile.array[0].name === " ") {
+          document.querySelector(".take-pile-" + i).disabled = true;
         }
-      })
+      });
     }
+  }
+
+  function namePrivateDraft() {
+    let name = prompt("Please Enter A Unique Name For Your Draft");
+    initializeNewPrivateDraft(name);
   }
 
   // HTML Events
@@ -295,10 +411,13 @@
     initializeNewDraft();
   });
 
+  newPrivateDraftBtn.addEventListener("click", event => {
+    namePrivateDraft();
+  });
+
   cardPileBtns.forEach(ele => {
     ele.addEventListener("click", event => {
       pickPileButtonClick(ele);
     });
   });
-
 })();
