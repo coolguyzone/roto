@@ -28,13 +28,27 @@ let privateDraftDB;
 
   //Firebase Listeners
   function refreshVisualPilesListener(dataString) {
-    ref.child(dataString).on("value", function(snapshot) {
-      let pile = snapshot.val();
-      console.log(pile);
-      if (pile.array !== undefined) {
-        populatePile(pile);
-      }
-    });
+    if (privateDraft) {
+      console.log("privedraft");
+      ref
+        .child(privateDraftDB)
+        .child(dataString)
+        .on("value", function(snapshot) {
+          let pile = snapshot.val();
+          console.log(pile);
+          if (pile.array !== undefined) {
+            populatePile(pile);
+          }
+        });
+    } else {
+      ref.child(dataString).on("value", function(snapshot) {
+        let pile = snapshot.val();
+        console.log(pile);
+        if (pile.array !== undefined) {
+          populatePile(pile);
+        }
+      });
+    }
   }
   //privateDraft
   function refreshVisualPrivatePilesListener(dbName, dataString) {
@@ -165,18 +179,43 @@ let privateDraftDB;
   }
 
   function replacePilesWithTopCard() {
-    getData("draftPoolRemaining").then(function(draftPool) {
-      let tempDraftPool = draftPool;
-      for (let i = 1; i < 5; i++) {
-        let tempCardPile = [];
-        tempCardPile.push(tempDraftPool.pop());
+    if (privateDraft) {
+      getData(privateDraftDB).then(function(draftPool) {
+        let privateDraftPool = draftPool.draftPoolRemaining;
+        let tempDraftPool = privateDraftPool;
+        for (let i = 1; i < 5; i++) {
+          let tempCardPile = [];
+          tempCardPile.push(tempDraftPool.pop());
+          ref
+            .child(privateDraftDB)
+            .child("cardPile" + i)
+            .child("array")
+            .set(tempCardPile);
+          ref
+            .child(privateDraftDB)
+            .child("cardPile" + i)
+            .child("number")
+            .set(i - 1);
+        }
         ref
-          .child("cardPile" + i)
-          .child("array")
-          .set(tempCardPile);
-      }
-      ref.child("draftPoolRemaining").set(tempDraftPool);
-    });
+          .child(privateDraftDB)
+          .child("draftPoolRemaining")
+          .set(tempDraftPool);
+      });
+    } else {
+      getData("draftPoolRemaining").then(function(draftPool) {
+        let tempDraftPool = draftPool;
+        for (let i = 1; i < 5; i++) {
+          let tempCardPile = [];
+          tempCardPile.push(tempDraftPool.pop());
+          ref
+            .child("cardPile" + i)
+            .child("array")
+            .set(tempCardPile);
+        }
+        ref.child("draftPoolRemaining").set(tempDraftPool);
+      });
+    }
   }
 
   //private
@@ -253,98 +292,208 @@ let privateDraftDB;
 
   // Draft Functions
   function pickPileButtonClick(ele) {
-    getData("draftPoolRemaining").then(function(draftPool) {
-      if (draftPool !== null) {
-        clearHTMLPiles();
-      }
-      switch (ele.classList[1]) {
-        case "take-pile-1":
-          if (draftPool === null) {
-            cardPileLists[0].innerHTML = "";
-          }
-          pickPile("cardPile1");
-          break;
-        case "take-pile-2":
-          if (draftPool === null) {
-            cardPileLists[1].innerHTML = "";
-          }
-          pickPile("cardPile2");
-          break;
-        case "take-pile-3":
-          if (draftPool === null) {
-            cardPileLists[2].innerHTML = "";
-          }
-          pickPile("cardPile3");
-          break;
-        case "take-pile-4":
-          if (draftPool === null) {
-            cardPileLists[3].innerHTML = "";
-          }
-          pickPile("cardPile4");
-          break;
-      }
-    });
+    if (privateDraft) {
+      getData(privateDraftDB).then(function(privateDraftData) {
+        let draftPool = privateDraftData.draftPoolRemaining;
+        if (draftPool !== null) {
+          clearHTMLPiles();
+        }
+        switch (ele.classList[1]) {
+          case "take-pile-1":
+            if (draftPool === null) {
+              cardPileLists[0].innerHTML = "";
+            }
+            pickPile("cardPile1");
+            break;
+          case "take-pile-2":
+            if (draftPool === null) {
+              cardPileLists[1].innerHTML = "";
+            }
+            pickPile("cardPile2");
+            break;
+          case "take-pile-3":
+            if (draftPool === null) {
+              cardPileLists[2].innerHTML = "";
+            }
+            pickPile("cardPile3");
+            break;
+          case "take-pile-4":
+            if (draftPool === null) {
+              cardPileLists[3].innerHTML = "";
+            }
+            pickPile("cardPile4");
+            break;
+        }
+      });
+    } else {
+      getData("draftPoolRemaining").then(function(draftPool) {
+        if (draftPool !== null) {
+          clearHTMLPiles();
+        }
+        switch (ele.classList[1]) {
+          case "take-pile-1":
+            if (draftPool === null) {
+              cardPileLists[0].innerHTML = "";
+            }
+            pickPile("cardPile1");
+            break;
+          case "take-pile-2":
+            if (draftPool === null) {
+              cardPileLists[1].innerHTML = "";
+            }
+            pickPile("cardPile2");
+            break;
+          case "take-pile-3":
+            if (draftPool === null) {
+              cardPileLists[2].innerHTML = "";
+            }
+            pickPile("cardPile3");
+            break;
+          case "take-pile-4":
+            if (draftPool === null) {
+              cardPileLists[3].innerHTML = "";
+            }
+            pickPile("cardPile4");
+            break;
+        }
+      });
+    }
   }
 
   function addCardsToPiles(cardPile) {
-    getData("draftPoolRemaining").then(function(draftPool) {
-      let tempDraftPool = draftPool;
-      for (let i = 1; i < 5; i++) {
-        getData("cardPile" + i).then(function(pile) {
-          let tempCardPile = [];
-          if (cardPile !== "cardPile" + i) {
-            tempCardPile = pile.array;
-            if (draftPool !== null) {
-              tempCardPile.push(tempDraftPool.pop());
-            }
-          } else {
-            if (draftPool !== null) {
-              tempCardPile.push(tempDraftPool.pop());
+    if (privateDraft) {
+      getData(privateDraftDB).then(function(privateDraftData) {
+        let draftPool = privateDraftData.draftPoolRemaining;
+        let tempDraftPool = draftPool;
+        for (let i = 1; i < 5; i++) {
+          getData(privateDraftDB).then(function(data) {
+            let pile = data["cardPile" + i];
+            let tempCardPile = [];
+            if (cardPile !== "cardPile" + i) {
+              tempCardPile = pile.array;
+              if (draftPool !== null) {
+                tempCardPile.push(tempDraftPool.pop());
+              }
             } else {
-              tempCardPile = [{ name: " " }];
-              document.querySelector(".take-pile-" + i).disabled = true;
+              if (draftPool !== null) {
+                tempCardPile.push(tempDraftPool.pop());
+              } else {
+                tempCardPile = [{ name: " " }];
+                document.querySelector(".take-pile-" + i).disabled = true;
+              }
             }
-          }
-          ref.child("draftPoolRemaining").set(tempDraftPool);
-          ref
-            .child("cardPile" + i)
-            .child("array")
-            .set(tempCardPile);
-        });
-      }
-    });
+            ref
+              .child(privateDraftDB)
+              .child("draftPoolRemaining")
+              .set(tempDraftPool);
+            ref
+              .child(privateDraftDB)
+              .child("cardPile" + i)
+              .child("array")
+              .set(tempCardPile);
+          });
+        }
+      });
+    } else {
+      getData("draftPoolRemaining").then(function(draftPool) {
+        let tempDraftPool = draftPool;
+        for (let i = 1; i < 5; i++) {
+          getData("cardPile" + i).then(function(pile) {
+            let tempCardPile = [];
+            if (cardPile !== "cardPile" + i) {
+              tempCardPile = pile.array;
+              if (draftPool !== null) {
+                tempCardPile.push(tempDraftPool.pop());
+              }
+            } else {
+              if (draftPool !== null) {
+                tempCardPile.push(tempDraftPool.pop());
+              } else {
+                tempCardPile = [{ name: " " }];
+                document.querySelector(".take-pile-" + i).disabled = true;
+              }
+            }
+            ref.child("draftPoolRemaining").set(tempDraftPool);
+            ref
+              .child("cardPile" + i)
+              .child("array")
+              .set(tempCardPile);
+          });
+        }
+      });
+    }
   }
 
   function addPileToPlayerPool(playerPile, cardPile) {
-    getData(cardPile).then(function(pile) {
-      getData(playerPile).then(function(pickedCards) {
+    if (privateDraft) {
+      getData(privateDraftDB).then(function(privateDraftData) {
+        console.log("cardpile", privateDraftData[cardPile], cardPile);
+        console.log("playerpile", privateDraftData.playerPile, playerPile);
+        let pile = privateDraftData[cardPile];
+        let pickedCards = privateDraftData[playerPile];
         if (pickedCards.array === undefined) {
           ref
+            .child(privateDraftDB)
             .child(playerPile)
             .child("array")
             .set(pile.array);
         } else {
           ref
+            .child(privateDraftDB)
             .child(playerPile)
             .child("array")
             .set(pickedCards.array.concat(pile.array));
         }
       });
-    });
+    } else {
+      getData(cardPile).then(function(pile) {
+        getData(playerPile).then(function(pickedCards) {
+          if (pickedCards.array === undefined) {
+            ref
+              .child(playerPile)
+              .child("array")
+              .set(pile.array);
+          } else {
+            ref
+              .child(playerPile)
+              .child("array")
+              .set(pickedCards.array.concat(pile.array));
+          }
+        });
+      });
+    }
   }
 
   function pickPile(cardPile) {
-    getData("player1Turn").then(function(res) {
-      if (res) {
-        cardPileLists[4].innerHTML = "";
-        addPileToPlayerPool("player1Pile", cardPile);
-      } else {
-        cardPileLists[5].innerHTML = "";
-        addPileToPlayerPool("player2Pile", cardPile);
-      }
-      addCardsToPiles(cardPile);
-      ref.child("player1Turn").set(!res);
-    });
+    if (privateDraft) {
+      getData(privateDraftDB).then(function(privateDraftData) {
+        let res = privateDraftData.player1Turn;
+        if (res) {
+          cardPileLists[4].innerHTML = "";
+          addPileToPlayerPool("player1Pile", cardPile);
+        } else {
+          cardPileLists[5].innerHTML = "";
+          addPileToPlayerPool("player2Pile", cardPile);
+        }
+        addCardsToPiles(cardPile);
+        ref
+          .child(privateDraftDB)
+          .child("player1Turn")
+          .set(!res);
+      });
+    } else {
+      getData("player1Turn").then(function(res) {
+        if (res) {
+          cardPileLists[4].innerHTML = "";
+          addPileToPlayerPool("player1Pile", cardPile);
+        } else {
+          cardPileLists[5].innerHTML = "";
+          addPileToPlayerPool("player2Pile", cardPile);
+        }
+        addCardsToPiles(cardPile);
+        ref.child("player1Turn").set(!res);
+      });
+    }
   }
 
   // Update HTML Element Functions
