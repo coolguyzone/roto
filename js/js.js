@@ -291,6 +291,7 @@ let privateDraftDB;
     refreshVisualPrivatePilesListener(dbName, "player1Pile");
     refreshVisualPrivatePilesListener(dbName, "player2Pile");
     draftName.innerHTML = "Private Draft: " + dbName;
+    localStorage.setItem("privateDraftName", dbName);
   }
 
   function loadExistingDraft(name) {
@@ -306,6 +307,7 @@ let privateDraftDB;
     refreshVisualPrivatePilesListener(name, "player1Pile");
     refreshVisualPrivatePilesListener(name, "player2Pile");
     draftName.innerHTML = "Private Draft: " + name;
+    localStorage.setItem("privateDraftName", name);
   }
 
   // Draft Functions
@@ -590,13 +592,20 @@ let privateDraftDB;
 
   // HTML Events
   window.onload = function() {
-    disableEmptyPileButtons();
-    refreshVisualPilesListener("cardPile1");
-    refreshVisualPilesListener("cardPile2");
-    refreshVisualPilesListener("cardPile3");
-    refreshVisualPilesListener("cardPile4");
-    refreshVisualPilesListener("player1Pile");
-    refreshVisualPilesListener("player2Pile");
+    if (localStorage.getItem("privateDraftName")) {
+      privateDraftDB = localStorage.getItem("privateDraftName");
+      clearHTMLPiles();
+      clearHTMLPlayerPiles();
+      loadExistingDraft(privateDraftDB);
+    } else {
+      disableEmptyPileButtons();
+      refreshVisualPilesListener("cardPile1");
+      refreshVisualPilesListener("cardPile2");
+      refreshVisualPilesListener("cardPile3");
+      refreshVisualPilesListener("cardPile4");
+      refreshVisualPilesListener("player1Pile");
+      refreshVisualPilesListener("player2Pile");
+    }
   };
 
   resetDraftBtn.addEventListener("click", event => {
