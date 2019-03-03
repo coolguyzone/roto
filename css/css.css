@@ -157,14 +157,15 @@ img {
   flex-wrap: wrap;
 }
 
-.card-count {
+.draft-name {
   margin-top: 50px;
   margin-bottom: 10px;
   font-size: 2em;
   text-align: center;
 }
 
-.player-turn {
+.player-turn,
+.card-count {
   margin-top: 10px;
   font-size: 2em;
   text-align: center;
@@ -175,8 +176,12 @@ img {
   display: block;
 }
 
+.top-btn-row {
+  text-align: center;
+  margin-top: 20px;
+}
+
 .reset-draft-btn {
-  display: block;
   margin: auto;
 }
 
