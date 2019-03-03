@@ -22,6 +22,7 @@ let privateDraftDB;
   let cardCount = document.querySelector(".card-count");
   let playerTurn = document.querySelector(".player-turn");
   let newPrivateDraftBtn = document.querySelector(".new-private-draft-btn");
+  let joinExistingDraftBtn = document.querySelector(".join-existing-draft-btn");
 
   // Firebase Variables
   const ref = firebase.database().ref();
@@ -290,14 +291,26 @@ let privateDraftDB;
     refreshVisualPrivatePilesListener(dbName, "player2Pile");
   }
 
+  function loadExistingDraft(name) {
+    privateDraft = true;
+    privateDraftDB = name;
+    enableAllButtons();
+    clearHTMLPiles();
+    clearHTMLPlayerPiles();
+    refreshVisualPrivatePilesListener(name, "cardPile1");
+    refreshVisualPrivatePilesListener(name, "cardPile2");
+    refreshVisualPrivatePilesListener(name, "cardPile3");
+    refreshVisualPrivatePilesListener(name, "cardPile4");
+    refreshVisualPrivatePilesListener(name, "player1Pile");
+    refreshVisualPrivatePilesListener(name, "player2Pile");
+  }
+
   // Draft Functions
   function pickPileButtonClick(ele) {
     if (privateDraft) {
       getData(privateDraftDB).then(function(privateDraftData) {
         let draftPool = privateDraftData.draftPoolRemaining;
-        if (draftPool !== null) {
-          clearHTMLPiles();
-        }
+        clearHTMLPiles();
         switch (ele.classList[1]) {
           case "take-pile-1":
             if (draftPool === null) {
@@ -545,6 +558,11 @@ let privateDraftDB;
     initializeNewPrivateDraft(name);
   }
 
+  function joinExistingDraft() {
+    let name = prompt("Please enter the name of an existing draft");
+    loadExistingDraft(name);
+  }
+
   // HTML Events
   window.onload = function() {
     disableEmptyPileButtons();
@@ -562,6 +580,10 @@ let privateDraftDB;
 
   newPrivateDraftBtn.addEventListener("click", event => {
     namePrivateDraft();
+  });
+
+  joinExistingDraftBtn.addEventListener("click", event => {
+    joinExistingDraft();
   });
 
   cardPileBtns.forEach(ele => {
