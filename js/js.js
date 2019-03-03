@@ -558,12 +558,34 @@ let privateDraftDB;
 
   function namePrivateDraft() {
     let name = prompt("Please Enter A Unique Name For Your Draft");
-    initializeNewPrivateDraft(name);
+    let uniqueName = false;
+    getData(name).then(function(data) {
+      console.log(data);
+      if (!data) {
+        uniqueName = true;
+      }
+      if (uniqueName) {
+        initializeNewPrivateDraft(name);
+      } else {
+        alert("That name is already in use, please try again.");
+      }
+    });
   }
 
   function joinExistingDraft() {
     let name = prompt("Please enter the name of an existing draft");
-    loadExistingDraft(name);
+    let nameExists = false;
+    getData(name).then(function(data) {
+      console.log(data);
+      if (data) {
+        nameExists = true;
+      }
+      if (nameExists) {
+        loadExistingDraft(name);
+      } else {
+        alert("No draft exists with that name, try again.");
+      }
+    });
   }
 
   // HTML Events
