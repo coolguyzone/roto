@@ -23,6 +23,7 @@ let privateDraftDB;
   let playerTurn = document.querySelector(".player-turn");
   let newPrivateDraftBtn = document.querySelector(".new-private-draft-btn");
   let joinExistingDraftBtn = document.querySelector(".join-existing-draft-btn");
+  let draftName = document.querySelector(".draft-name");
 
   // Firebase Variables
   const ref = firebase.database().ref();
@@ -289,6 +290,7 @@ let privateDraftDB;
     refreshVisualPrivatePilesListener(dbName, "cardPile4");
     refreshVisualPrivatePilesListener(dbName, "player1Pile");
     refreshVisualPrivatePilesListener(dbName, "player2Pile");
+    draftName.innerHTML = "Private Draft: " + dbName;
   }
 
   function loadExistingDraft(name) {
@@ -303,6 +305,7 @@ let privateDraftDB;
     refreshVisualPrivatePilesListener(name, "cardPile4");
     refreshVisualPrivatePilesListener(name, "player1Pile");
     refreshVisualPrivatePilesListener(name, "player2Pile");
+    draftName.innerHTML = "Private Draft: " + name;
   }
 
   // Draft Functions
