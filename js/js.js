@@ -55,42 +55,59 @@ let privateDraftDB;
       });
   }
 
-  ref.child("draftPoolRemaining").on("value", function(snapshot) {
-    let draftPool = snapshot.val();
-    if (draftPool !== null) {
-      if (draftPool.length === 100) {
-        replacePilesWithTopCard();
-      }
-      cardCount.innerHTML = draftPool.length + " Cards Left";
-    } else {
-      cardCount.innerHTML = "No Cards Left";
-    }
-  });
-
-  //privateDraft
-  if (privateDraft) {
-    ref.child(privateDraftDB).on("value", function(snapshot) {
-      console.log("yaaa", snapshot.val().draftPoolRemaining);
-      let draftPool = snapshot.val().draftPoolRemaining;
-      if (draftPool !== null) {
-        if (draftPool.length === 100) {
-          replacePilesWithTopCard();
+  //this setTimeout is kind of a hack
+  //TODO: come up with better solution for the synchronicity issue here
+  setTimeout(function() {
+    if (!privateDraft) {
+      ref.child("draftPoolRemaining").on("value", function(snapshot) {
+        let draftPool = snapshot.val();
+        console.log("whoah");
+        if (draftPool !== null) {
+          if (draftPool.length === 100) {
+            replacePilesWithTopCard();
+          }
+          cardCount.innerHTML = draftPool.length + " Cards Left";
+        } else {
+          cardCount.innerHTML = "No Cards Left";
         }
-        cardCount.innerHTML = draftPool.length + " Cards Left";
-      } else {
-        cardCount.innerHTML = "No Cards Left";
-      }
-    });
-  }
-
-  ref.child("player1Turn").on("value", function(snapshot) {
-    let player1Turn = snapshot.val();
-    if (player1Turn) {
-      playerTurn.innerHTML = "Player 1's Pick";
+      });
     } else {
-      playerTurn.innerHTML = "Player 2's Pick";
+      ref.child(privateDraftDB).on("value", function(snapshot) {
+        console.log("yaaa", snapshot.val().draftPoolRemaining);
+        let draftPool = snapshot.val().draftPoolRemaining;
+        if (draftPool !== null) {
+          if (draftPool.length === 100) {
+            replacePilesWithTopCard();
+          }
+          cardCount.innerHTML = draftPool.length + " Cards Left";
+        } else {
+          cardCount.innerHTML = "No Cards Left";
+        }
+      });
     }
-  });
+
+    //privateDraft
+    if (privateDraft) {
+      ref.child(privateDraftDB).on("value", function(snapshot) {
+        console.log("turn", snapshot.val().player1Turn);
+        let player1Turn = snapshot.val().player1Turn;
+        if (player1Turn) {
+          playerTurn.innerHTML = "Player 1's Pick";
+        } else {
+          playerTurn.innerHTML = "Player 2's Pick";
+        }
+      });
+    } else {
+      ref.child("player1Turn").on("value", function(snapshot) {
+        let player1Turn = snapshot.val();
+        if (player1Turn) {
+          playerTurn.innerHTML = "Player 1's Pick";
+        } else {
+          playerTurn.innerHTML = "Player 2's Pick";
+        }
+      });
+    }
+  }, 500);
 
   // General Functions
   function getData(dataString) {
