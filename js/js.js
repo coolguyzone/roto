@@ -17,6 +17,7 @@ let privateDraftDB;
   let cardPile3Btn = document.querySelector(".take-pile-3");
   let cardPile4Btn = document.querySelector(".take-pile-4");
   let resetDraftBtn = document.querySelector(".reset-draft-btn");
+  let joinPublicDraftBtn = document.querySelector(".join-public-draft-btn");
   let cardPiles = document.querySelectorAll(".card-pile");
   let cardPileLists = document.querySelectorAll(".pile-list");
   let cardCount = document.querySelector(".card-count");
@@ -30,19 +31,7 @@ let privateDraftDB;
 
   //Firebase Listeners
   function refreshVisualPilesListener(dataString) {
-    if (privateDraft) {
-      console.log("privedraft");
-      ref
-        .child(privateDraftDB)
-        .child(dataString)
-        .on("value", function(snapshot) {
-          let pile = snapshot.val();
-          console.log(pile);
-          if (pile.array !== undefined) {
-            populatePile(pile);
-          }
-        });
-    } else {
+    if (!privateDraft) {
       ref.child(dataString).on("value", function(snapshot) {
         let pile = snapshot.val();
         console.log(pile);
@@ -261,6 +250,8 @@ let privateDraftDB;
   }
 
   function initializeNewDraft() {
+    localStorage.clear();
+    draftName.innerHTML = "Public Draft";
     createNewDraftList();
     resetPiles();
     enableAllButtons();
@@ -583,7 +574,8 @@ let privateDraftDB;
         nameExists = true;
       }
       if (nameExists) {
-        loadExistingDraft(name);
+        localStorage.setItem("privateDraftName", name);
+        location.reload();
       } else {
         alert("No draft exists with that name, try again.");
       }
@@ -610,6 +602,11 @@ let privateDraftDB;
 
   resetDraftBtn.addEventListener("click", event => {
     initializeNewDraft();
+  });
+
+  joinPublicDraftBtn.addEventListener("click", event => {
+    localStorage.clear();
+    location.reload();
   });
 
   newPrivateDraftBtn.addEventListener("click", event => {
