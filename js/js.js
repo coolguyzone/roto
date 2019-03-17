@@ -551,6 +551,12 @@ let privateDraftDB;
 
   function namePrivateDraft() {
     let name = prompt("Please Enter A Unique Name For Your Draft");
+    if (!validateName(name)) {
+      alert(
+        "Please only include alphanumeric symbols and hyphens in your draft name."
+      );
+      return;
+    }
     let uniqueName = false;
     getData(name).then(function(data) {
       console.log(data);
@@ -567,6 +573,12 @@ let privateDraftDB;
 
   function joinExistingDraft() {
     let name = prompt("Please enter the name of an existing draft");
+    if (!validateName(name)) {
+      alert(
+        "Please only include alphanumeric symbols and hyphens in your draft name."
+      );
+      return;
+    }
     let nameExists = false;
     getData(name).then(function(data) {
       console.log(data);
@@ -622,4 +634,16 @@ let privateDraftDB;
       pickPileButtonClick(ele);
     });
   });
+
+  //input validations
+  function validateName(name) {
+    let acceptedChars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-";
+    for (let i = 0; i < name.length; i++) {
+      if (!acceptedChars.includes(name[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
 })();
