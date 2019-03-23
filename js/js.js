@@ -75,7 +75,7 @@ let privateDraftDB;
       ref.child(privateDraftDB).on("value", function(snapshot) {
         console.log("yaaa", snapshot.val().draftPoolRemaining);
         let draftPool = snapshot.val().draftPoolRemaining;
-        if (draftPool !== null) {
+        if (draftPool !== undefined) {
           if (draftPool.length === 100) {
             replacePilesWithTopCard();
           }
@@ -282,10 +282,11 @@ let privateDraftDB;
     ref.child(dbName).update({ player1Turn: true });
     ref.child(privateDraftDB).on("value", function(snapshot) {
       let draftPool = snapshot.val().draftPoolRemaining;
-      if (draftPool !== null) {
+      if (draftPool !== undefined) {
         if (draftPool.length === 100) {
           replacePrivatePilesWithTopCard(dbName);
         }
+
         cardCount.innerHTML = draftPool.length + " Cards Left";
       } else {
         cardCount.innerHTML = "No Cards Left";
@@ -323,28 +324,30 @@ let privateDraftDB;
     if (privateDraft) {
       getData(privateDraftDB).then(function(privateDraftData) {
         let draftPool = privateDraftData.draftPoolRemaining;
-        clearHTMLPiles();
+        if (draftPool !== undefined) {
+          clearHTMLPiles();
+        }
         switch (ele.classList[1]) {
           case "take-pile-1":
-            if (draftPool === null) {
+            if (draftPool === undefined) {
               cardPileLists[0].innerHTML = "";
             }
             pickPile("cardPile1");
             break;
           case "take-pile-2":
-            if (draftPool === null) {
+            if (draftPool === undefined) {
               cardPileLists[1].innerHTML = "";
             }
             pickPile("cardPile2");
             break;
           case "take-pile-3":
-            if (draftPool === null) {
+            if (draftPool === undefined) {
               cardPileLists[2].innerHTML = "";
             }
             pickPile("cardPile3");
             break;
           case "take-pile-4":
-            if (draftPool === null) {
+            if (draftPool === undefined) {
               cardPileLists[3].innerHTML = "";
             }
             pickPile("cardPile4");
