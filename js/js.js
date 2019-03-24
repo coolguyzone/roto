@@ -16,8 +16,6 @@ let privateDraftDB;
   let cardPile2Btn = document.querySelector(".take-pile-2");
   let cardPile3Btn = document.querySelector(".take-pile-3");
   let cardPile4Btn = document.querySelector(".take-pile-4");
-  let resetDraftBtn = document.querySelector(".reset-draft-btn");
-  let joinPublicDraftBtn = document.querySelector(".join-public-draft-btn");
   let cardPiles = document.querySelectorAll(".card-pile");
   let cardPileLists = document.querySelectorAll(".pile-list");
   let cardCount = document.querySelector(".card-count");
@@ -30,18 +28,7 @@ let privateDraftDB;
   const ref = firebase.database().ref();
 
   //Firebase Listeners
-  function refreshVisualPilesListener(dataString) {
-    if (!privateDraft) {
-      ref.child(dataString).on("value", function(snapshot) {
-        let pile = snapshot.val();
-        console.log(pile);
-        if (pile.array !== undefined) {
-          populatePile(pile);
-        }
-      });
-    }
-  }
-  //privateDraft
+
   function refreshVisualPrivatePilesListener(dbName, dataString) {
     ref
       .child(dbName)
@@ -58,20 +45,7 @@ let privateDraftDB;
   //this setTimeout is kind of a hack
   //TODO: come up with better solution for the synchronicity issue here
   setTimeout(function() {
-    if (!privateDraft) {
-      ref.child("draftPoolRemaining").on("value", function(snapshot) {
-        let draftPool = snapshot.val();
-        console.log("whoah");
-        if (draftPool !== null) {
-          if (draftPool.length === 100) {
-            replacePilesWithTopCard();
-          }
-          cardCount.innerHTML = draftPool.length + " Cards Left";
-        } else {
-          cardCount.innerHTML = "No Cards Left";
-        }
-      });
-    } else {
+    if (privateDraftDB) {
       ref.child(privateDraftDB).on("value", function(snapshot) {
         console.log("yaaa", snapshot.val().draftPoolRemaining);
         let draftPool = snapshot.val().draftPoolRemaining;
@@ -84,22 +58,12 @@ let privateDraftDB;
           cardCount.innerHTML = "No Cards Left";
         }
       });
-    }
 
-    //privateDraft
-    if (privateDraft) {
+      //privateDraft
+
       ref.child(privateDraftDB).on("value", function(snapshot) {
         console.log("turn", snapshot.val().player1Turn);
         let player1Turn = snapshot.val().player1Turn;
-        if (player1Turn) {
-          playerTurn.innerHTML = "Player 1's Pick";
-        } else {
-          playerTurn.innerHTML = "Player 2's Pick";
-        }
-      });
-    } else {
-      ref.child("player1Turn").on("value", function(snapshot) {
-        let player1Turn = snapshot.val();
         if (player1Turn) {
           playerTurn.innerHTML = "Player 1's Pick";
         } else {
@@ -168,13 +132,6 @@ let privateDraftDB;
   }
 
   // Initialize Functions
-  function createNewDraftList() {
-    getData("newCube").then(function(value) {
-      let newDraftList = Object.values(value);
-      newDraftList = shuffleArray(newDraftList).splice(0, 100);
-      ref.child("draftPoolRemaining").set(newDraftList);
-    });
-  }
 
   function createNewPrivateDraftList(dbName) {
     privateDraft = true;
@@ -187,43 +144,28 @@ let privateDraftDB;
   }
 
   function replacePilesWithTopCard() {
-    if (privateDraft) {
-      getData(privateDraftDB).then(function(draftPool) {
-        let privateDraftPool = draftPool.draftPoolRemaining;
-        let tempDraftPool = privateDraftPool;
-        for (let i = 1; i < 5; i++) {
-          let tempCardPile = [];
-          tempCardPile.push(tempDraftPool.pop());
-          ref
-            .child(privateDraftDB)
-            .child("cardPile" + i)
-            .child("array")
-            .set(tempCardPile);
-          ref
-            .child(privateDraftDB)
-            .child("cardPile" + i)
-            .child("number")
-            .set(i - 1);
-        }
+    getData(privateDraftDB).then(function(draftPool) {
+      let privateDraftPool = draftPool.draftPoolRemaining;
+      let tempDraftPool = privateDraftPool;
+      for (let i = 1; i < 5; i++) {
+        let tempCardPile = [];
+        tempCardPile.push(tempDraftPool.pop());
         ref
           .child(privateDraftDB)
-          .child("draftPoolRemaining")
-          .set(tempDraftPool);
-      });
-    } else {
-      getData("draftPoolRemaining").then(function(draftPool) {
-        let tempDraftPool = draftPool;
-        for (let i = 1; i < 5; i++) {
-          let tempCardPile = [];
-          tempCardPile.push(tempDraftPool.pop());
-          ref
-            .child("cardPile" + i)
-            .child("array")
-            .set(tempCardPile);
-        }
-        ref.child("draftPoolRemaining").set(tempDraftPool);
-      });
-    }
+          .child("cardPile" + i)
+          .child("array")
+          .set(tempCardPile);
+        ref
+          .child(privateDraftDB)
+          .child("cardPile" + i)
+          .child("number")
+          .set(i - 1);
+      }
+      ref
+        .child(privateDraftDB)
+        .child("draftPoolRemaining")
+        .set(tempDraftPool);
+    });
   }
 
   //private
@@ -252,27 +194,11 @@ let privateDraftDB;
     });
   }
 
-  function resetPiles() {
-    clearHTMLPiles();
-    clearHTMLPlayerPiles();
-    ref.child("player1Pile").set({ number: 4 });
-    ref.child("player2Pile").set({ number: 5 });
-  }
-
   function resetPrivatePiles(dbName) {
     clearHTMLPiles();
     clearHTMLPlayerPiles();
     ref.child(dbName).update({ player1Pile: { number: 4 } });
     ref.child(dbName).update({ player2Pile: { number: 5 } });
-  }
-
-  function initializeNewDraft() {
-    localStorage.clear();
-    draftName.innerHTML = "Public Draft";
-    createNewDraftList();
-    resetPiles();
-    enableAllButtons();
-    ref.child("player1Turn").set(true);
   }
 
   function initializeNewPrivateDraft(dbName) {
@@ -321,208 +247,113 @@ let privateDraftDB;
 
   // Draft Functions
   function pickPileButtonClick(ele) {
-    if (privateDraft) {
-      getData(privateDraftDB).then(function(privateDraftData) {
-        let draftPool = privateDraftData.draftPoolRemaining;
-        if (draftPool !== undefined) {
-          clearHTMLPiles();
-        }
-        switch (ele.classList[1]) {
-          case "take-pile-1":
-            if (draftPool === undefined) {
-              cardPileLists[0].innerHTML = "";
-            }
-            pickPile("cardPile1");
-            break;
-          case "take-pile-2":
-            if (draftPool === undefined) {
-              cardPileLists[1].innerHTML = "";
-            }
-            pickPile("cardPile2");
-            break;
-          case "take-pile-3":
-            if (draftPool === undefined) {
-              cardPileLists[2].innerHTML = "";
-            }
-            pickPile("cardPile3");
-            break;
-          case "take-pile-4":
-            if (draftPool === undefined) {
-              cardPileLists[3].innerHTML = "";
-            }
-            pickPile("cardPile4");
-            break;
-        }
-      });
-    } else {
-      getData("draftPoolRemaining").then(function(draftPool) {
-        if (draftPool !== null) {
-          clearHTMLPiles();
-        }
-        switch (ele.classList[1]) {
-          case "take-pile-1":
-            if (draftPool === null) {
-              cardPileLists[0].innerHTML = "";
-            }
-            pickPile("cardPile1");
-            break;
-          case "take-pile-2":
-            if (draftPool === null) {
-              cardPileLists[1].innerHTML = "";
-            }
-            pickPile("cardPile2");
-            break;
-          case "take-pile-3":
-            if (draftPool === null) {
-              cardPileLists[2].innerHTML = "";
-            }
-            pickPile("cardPile3");
-            break;
-          case "take-pile-4":
-            if (draftPool === null) {
-              cardPileLists[3].innerHTML = "";
-            }
-            pickPile("cardPile4");
-            break;
-        }
-      });
-    }
+    getData(privateDraftDB).then(function(privateDraftData) {
+      let draftPool = privateDraftData.draftPoolRemaining;
+      if (draftPool !== undefined) {
+        clearHTMLPiles();
+      }
+      switch (ele.classList[1]) {
+        case "take-pile-1":
+          if (draftPool === undefined) {
+            cardPileLists[0].innerHTML = "";
+          }
+          pickPile("cardPile1");
+          break;
+        case "take-pile-2":
+          if (draftPool === undefined) {
+            cardPileLists[1].innerHTML = "";
+          }
+          pickPile("cardPile2");
+          break;
+        case "take-pile-3":
+          if (draftPool === undefined) {
+            cardPileLists[2].innerHTML = "";
+          }
+          pickPile("cardPile3");
+          break;
+        case "take-pile-4":
+          if (draftPool === undefined) {
+            cardPileLists[3].innerHTML = "";
+          }
+          pickPile("cardPile4");
+          break;
+      }
+    });
   }
 
   function addCardsToPiles(cardPile) {
-    if (privateDraft) {
-      getData(privateDraftDB).then(function(privateDraftData) {
-        let draftPool = privateDraftData.draftPoolRemaining;
-        let tempDraftPool = draftPool;
-        for (let i = 1; i < 5; i++) {
-          getData(privateDraftDB).then(function(data) {
-            let pile = data["cardPile" + i];
-            let tempCardPile = [];
-            if (cardPile !== "cardPile" + i) {
-              tempCardPile = pile.array;
-              if (draftPool !== null) {
-                tempCardPile.push(tempDraftPool.pop());
-              }
-            } else {
-              if (draftPool !== null) {
-                tempCardPile.push(tempDraftPool.pop());
-              } else {
-                tempCardPile = [{ name: " " }];
-                document.querySelector(".take-pile-" + i).disabled = true;
-              }
+    getData(privateDraftDB).then(function(privateDraftData) {
+      let draftPool = privateDraftData.draftPoolRemaining;
+      let tempDraftPool = draftPool;
+      for (let i = 1; i < 5; i++) {
+        getData(privateDraftDB).then(function(data) {
+          let pile = data["cardPile" + i];
+          let tempCardPile = [];
+          if (cardPile !== "cardPile" + i) {
+            tempCardPile = pile.array;
+            if (draftPool !== null) {
+              tempCardPile.push(tempDraftPool.pop());
             }
-            ref
-              .child(privateDraftDB)
-              .child("draftPoolRemaining")
-              .set(tempDraftPool);
-            ref
-              .child(privateDraftDB)
-              .child("cardPile" + i)
-              .child("array")
-              .set(tempCardPile);
-          });
-        }
-      });
-    } else {
-      getData("draftPoolRemaining").then(function(draftPool) {
-        let tempDraftPool = draftPool;
-        for (let i = 1; i < 5; i++) {
-          getData("cardPile" + i).then(function(pile) {
-            let tempCardPile = [];
-            if (cardPile !== "cardPile" + i) {
-              tempCardPile = pile.array;
-              if (draftPool !== null) {
-                tempCardPile.push(tempDraftPool.pop());
-              }
+          } else {
+            if (draftPool !== null) {
+              tempCardPile.push(tempDraftPool.pop());
             } else {
-              if (draftPool !== null) {
-                tempCardPile.push(tempDraftPool.pop());
-              } else {
-                tempCardPile = [{ name: " " }];
-                document.querySelector(".take-pile-" + i).disabled = true;
-              }
+              tempCardPile = [{ name: " " }];
+              document.querySelector(".take-pile-" + i).disabled = true;
             }
-            ref.child("draftPoolRemaining").set(tempDraftPool);
-            ref
-              .child("cardPile" + i)
-              .child("array")
-              .set(tempCardPile);
-          });
-        }
-      });
-    }
+          }
+          ref
+            .child(privateDraftDB)
+            .child("draftPoolRemaining")
+            .set(tempDraftPool);
+          ref
+            .child(privateDraftDB)
+            .child("cardPile" + i)
+            .child("array")
+            .set(tempCardPile);
+        });
+      }
+    });
   }
 
   function addPileToPlayerPool(playerPile, cardPile) {
-    if (privateDraft) {
-      getData(privateDraftDB).then(function(privateDraftData) {
-        console.log("cardpile", privateDraftData[cardPile], cardPile);
-        console.log("playerpile", privateDraftData.playerPile, playerPile);
-        let pile = privateDraftData[cardPile];
-        let pickedCards = privateDraftData[playerPile];
-        if (pickedCards.array === undefined) {
-          ref
-            .child(privateDraftDB)
-            .child(playerPile)
-            .child("array")
-            .set(pile.array);
-        } else {
-          ref
-            .child(privateDraftDB)
-            .child(playerPile)
-            .child("array")
-            .set(pickedCards.array.concat(pile.array));
-        }
-      });
-    } else {
-      getData(cardPile).then(function(pile) {
-        getData(playerPile).then(function(pickedCards) {
-          if (pickedCards.array === undefined) {
-            ref
-              .child(playerPile)
-              .child("array")
-              .set(pile.array);
-          } else {
-            ref
-              .child(playerPile)
-              .child("array")
-              .set(pickedCards.array.concat(pile.array));
-          }
-        });
-      });
-    }
+    getData(privateDraftDB).then(function(privateDraftData) {
+      console.log("cardpile", privateDraftData[cardPile], cardPile);
+      console.log("playerpile", privateDraftData.playerPile, playerPile);
+      let pile = privateDraftData[cardPile];
+      let pickedCards = privateDraftData[playerPile];
+      if (pickedCards.array === undefined) {
+        ref
+          .child(privateDraftDB)
+          .child(playerPile)
+          .child("array")
+          .set(pile.array);
+      } else {
+        ref
+          .child(privateDraftDB)
+          .child(playerPile)
+          .child("array")
+          .set(pickedCards.array.concat(pile.array));
+      }
+    });
   }
 
   function pickPile(cardPile) {
-    if (privateDraft) {
-      getData(privateDraftDB).then(function(privateDraftData) {
-        let res = privateDraftData.player1Turn;
-        if (res) {
-          cardPileLists[4].innerHTML = "";
-          addPileToPlayerPool("player1Pile", cardPile);
-        } else {
-          cardPileLists[5].innerHTML = "";
-          addPileToPlayerPool("player2Pile", cardPile);
-        }
-        addCardsToPiles(cardPile);
-        ref
-          .child(privateDraftDB)
-          .child("player1Turn")
-          .set(!res);
-      });
-    } else {
-      getData("player1Turn").then(function(res) {
-        if (res) {
-          cardPileLists[4].innerHTML = "";
-          addPileToPlayerPool("player1Pile", cardPile);
-        } else {
-          cardPileLists[5].innerHTML = "";
-          addPileToPlayerPool("player2Pile", cardPile);
-        }
-        addCardsToPiles(cardPile);
-        ref.child("player1Turn").set(!res);
-      });
-    }
+    getData(privateDraftDB).then(function(privateDraftData) {
+      let res = privateDraftData.player1Turn;
+      if (res) {
+        cardPileLists[4].innerHTML = "";
+        addPileToPlayerPool("player1Pile", cardPile);
+      } else {
+        cardPileLists[5].innerHTML = "";
+        addPileToPlayerPool("player2Pile", cardPile);
+      }
+      addCardsToPiles(cardPile);
+      ref
+        .child(privateDraftDB)
+        .child("player1Turn")
+        .set(!res);
+    });
   }
 
   // Update HTML Element Functions
@@ -623,23 +454,8 @@ let privateDraftDB;
       loadExistingDraft(privateDraftDB);
     } else {
       disableEmptyPileButtons();
-      refreshVisualPilesListener("cardPile1");
-      refreshVisualPilesListener("cardPile2");
-      refreshVisualPilesListener("cardPile3");
-      refreshVisualPilesListener("cardPile4");
-      refreshVisualPilesListener("player1Pile");
-      refreshVisualPilesListener("player2Pile");
     }
   };
-
-  resetDraftBtn.addEventListener("click", event => {
-    initializeNewDraft();
-  });
-
-  joinPublicDraftBtn.addEventListener("click", event => {
-    localStorage.clear();
-    location.reload();
-  });
 
   newPrivateDraftBtn.addEventListener("click", event => {
     namePrivateDraft();
