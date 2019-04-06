@@ -35,8 +35,8 @@ let privateDraftDB;
       .child(dataString)
       .on("value", function(snapshot) {
         let pile = snapshot.val();
-        console.log(pile);
-        if (pile.array !== undefined) {
+        console.log("pile");
+        if (pile.array[0].name != " ") {
           populatePile(pile);
         }
       });
@@ -291,21 +291,30 @@ let privateDraftDB;
           let tempCardPile = [];
           if (cardPile !== "cardPile" + i) {
             tempCardPile = pile.array;
-            if (draftPool !== null) {
+            if (draftPool && tempDraftPool) {
               tempCardPile.push(tempDraftPool.pop());
             }
           } else {
-            if (draftPool !== null) {
+            if (draftPool) {
               tempCardPile.push(tempDraftPool.pop());
             } else {
               tempCardPile = [{ name: " " }];
               document.querySelector(".take-pile-" + i).disabled = true;
             }
           }
-          ref
-            .child(privateDraftDB)
-            .child("draftPoolRemaining")
-            .set(tempDraftPool);
+          if (draftPool) {
+            if (draftPool.length < 1) {
+              tempDraftPool = null;
+            }
+          }
+          console.log("tempcardpile", tempCardPile);
+          if (draftPool) {
+            ref
+              .child(privateDraftDB)
+              .child("draftPoolRemaining")
+              .set(tempDraftPool);
+          }
+
           ref
             .child(privateDraftDB)
             .child("cardPile" + i)
@@ -392,11 +401,18 @@ let privateDraftDB;
 
   function disableEmptyPileButtons() {
     for (let i = 1; i < 5; i++) {
-      getData("cardPile" + i).then(function(pile) {
+      getData(privateDraftDB).then(function(draftData) {
+        let pile = draftData["cardPile" + i];
+        console.log("wuuuh", pile);
         if (pile.array.length === 1 && pile.array[0].name === " ") {
           document.querySelector(".take-pile-" + i).disabled = true;
         }
       });
+      // getData("cardPile" + i).then(function(pile) {
+      //   if (pile.array.length === 1 && pile.array[0].name === " ") {
+      //     document.querySelector(".take-pile-" + i).disabled = true;
+      //   }
+      // });
     }
   }
 
@@ -452,9 +468,8 @@ let privateDraftDB;
       clearHTMLPiles();
       clearHTMLPlayerPiles();
       loadExistingDraft(privateDraftDB);
-    } else {
-      disableEmptyPileButtons();
     }
+    disableEmptyPileButtons();
   };
 
   newPrivateDraftBtn.addEventListener("click", event => {
