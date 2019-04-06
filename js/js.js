@@ -29,15 +29,26 @@ let privateDraftDB;
 
   //Firebase Listeners
 
+  //TODO figure out why this refreshes twice sometimes.
+  //TODO figure out how to do this without using JS variable names as CSS classes.
   function refreshVisualPrivatePilesListener(dbName, dataString) {
+    let pile;
     ref
       .child(dbName)
       .child(dataString)
       .on("value", function(snapshot) {
-        let pile = snapshot.val();
-        console.log("pile");
+        pile = snapshot.val();
         if (pile.array[0].name != " ") {
           populatePile(pile);
+        }
+        let pileLength = pile.array.length;
+        let HTMLpileLength =
+          document.querySelectorAll(`.${dataString} li`).length / 2;
+        if (pile.array[0].name === " " && HTMLpileLength > 0) {
+          location.reload();
+        }
+        if (pile.array[0].name != " " && pileLength != HTMLpileLength) {
+          location.reload();
         }
       });
   }
