@@ -147,7 +147,7 @@ let privateDraftDB;
   function createNewPrivateDraftList(dbName) {
     privateDraft = true;
     privateDraftDB = dbName;
-    getData("newCube").then(function(value) {
+    getData("testCube").then(function(value) {
       let newDraftList = Object.values(value);
       newDraftList = shuffleArray(newDraftList).splice(0, 100);
       ref.child(dbName).update({ draftPoolRemaining: newDraftList });
