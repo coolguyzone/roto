@@ -23,6 +23,12 @@ let privateDraftDB;
   let newPrivateDraftBtn = document.querySelector(".new-private-draft-btn");
   let joinExistingDraftBtn = document.querySelector(".join-existing-draft-btn");
   let draftName = document.querySelector(".draft-name");
+  let newDraftModal = document.querySelector(".new-draft-modal");
+  let addCubeModal = document.querySelector(".add-cube-modal");
+  let draftSelectionBtn = document.querySelector(".submit-draft-selection-btn");
+  let submitCubeBtn = document.querySelector(".submit-cube-upload-btn");
+  let currentCube = "testCube";
+  let newDraftName;
 
   // Firebase Variables
   const ref = firebase.database().ref();
@@ -147,7 +153,7 @@ let privateDraftDB;
   function createNewPrivateDraftList(dbName) {
     privateDraft = true;
     privateDraftDB = dbName;
-    getData("testCube").then(function(value) {
+    getData(currentCube).then(function(value) {
       let newDraftList = Object.values(value);
       newDraftList = shuffleArray(newDraftList).splice(0, 100);
       ref.child(dbName).update({ draftPoolRemaining: newDraftList });
@@ -427,26 +433,77 @@ let privateDraftDB;
     }
   }
 
+  // function namePrivateDraft() {
+  //   let name = prompt("Please Enter A Unique Name For Your Draft");
+  //   if (!validateName(name)) {
+  //     alert(
+  //       "Please only include alphanumeric symbols and hyphens in your draft name."
+  //     );
+  //     return;
+  //   }
+  //   let uniqueName = false;
+  //   getData(name).then(function(data) {
+  //     console.log(data);
+  //     if (!data) {
+  //       uniqueName = true;
+  //     }
+  //     if (uniqueName) {
+  //       initializeNewPrivateDraft(name);
+  //     } else {
+  //       alert("That name is already in use, please try again.");
+  //     }
+  //   });
+  // }
+
   function namePrivateDraft() {
-    let name = prompt("Please Enter A Unique Name For Your Draft");
-    if (!validateName(name)) {
+    newDraftModal.style.display = "block";
+  }
+
+  function submitDraftSelection() {
+    newDraftName = document.querySelector(".new-draft-modal input[type='text']")
+      .value;
+    if (!validateName(newDraftName)) {
       alert(
         "Please only include alphanumeric symbols and hyphens in your draft name."
       );
       return;
     }
     let uniqueName = false;
-    getData(name).then(function(data) {
+    getData(newDraftName).then(function(data) {
       console.log(data);
       if (!data) {
         uniqueName = true;
       }
-      if (uniqueName) {
-        initializeNewPrivateDraft(name);
-      } else {
+      if (!uniqueName) {
         alert("That name is already in use, please try again.");
+        return;
+      } else if (
+        document.querySelector(".existing-cube-radial").checked &&
+        document.querySelector(".draft-dropdown").value === "alex-cube"
+      ) {
+        newDraftModal.style.display = "none";
+        initializeNewPrivateDraft(newDraftName);
+      } else if (document.querySelector(".add-cube-radial").checked) {
+        newDraftModal.style.display = "none";
+        addCubeModal.style.display = "block";
       }
     });
+  }
+
+  //TODO ADD VALIDATION HERE FOR <100 CARDS OR WEIRD CHARS
+  function submitCubeList() {
+    let newCubeName = document.querySelector(
+      ".add-cube-modal input[type='text']"
+    ).value;
+    let textAreaData = document.querySelector(".cube-list-textarea textarea")
+      .value;
+    let submittedCubeArray = textAreaData.split("\n");
+    createCubeList(newCubeName, submittedCubeArray);
+    setTimeout(function() {
+      currentCube = newCubeName;
+      addCubeModal.style.display = "none";
+      initializeNewPrivateDraft(newDraftName);
+    }, 10000);
   }
 
   function joinExistingDraft() {
@@ -495,6 +552,14 @@ let privateDraftDB;
     ele.addEventListener("click", event => {
       pickPileButtonClick(ele);
     });
+  });
+
+  draftSelectionBtn.addEventListener("click", event => {
+    submitDraftSelection();
+  });
+
+  submitCubeBtn.addEventListener("click", event => {
+    submitCubeList();
   });
 
   //input validations
