@@ -6,6 +6,42 @@
   <link rel="stylesheet" href="css/css.css">
   </head>
   <body>
+    <!--modals-->
+    <div class="new-draft-modal modal">
+      <h3>Please Enter A Unique Name For Your Draft:</h3>
+      <input type="text" class="new-draft-name">
+      <h3>Choose An Existing Cube Or Enter A New Cube:</h3>
+      <div class="new-draft-radials">
+        <div class="new-draft-radial-option">
+          <input type="radio" name="cube-option" class="existing-cube-radial"> Existing Cube
+        </div>
+        <div class="new-draft-radial-option">
+          <input type="radio" name="cube-option" class="add-cube-radial"> Add a New Cube
+        </div>
+      </div>
+      <div class="draft-list-dropdown">
+        <form name="draft-list">
+          <select class="draft-dropdown">
+            <option value="alex-cube">Alex's Pauper Cube</option>
+            <option value="example-cube">Example Cube</option>
+          </select>
+        </form>
+      </div>
+      <button class="submit-draft-selection-btn modal-submit">Submit</button>
+    </div>
+
+    <div class="add-cube-modal modal">
+      <h3>Please Enter A Unique Name For This Cube:</h3>
+      <input type="text" class="new-cube-name">
+      <h3>Please Enter A Cube of at Least 100 Cards, Separated By Line:</h3>
+      <div class="cube-list-textarea">
+        <textarea rows="20" cols="100"></textarea>
+        <h3>Please note there will be a 10-second delay after you hit submit to query the gatherer API.</h3>
+        <button class="submit-cube-upload-btn modal-submit">Submit</button>
+      </div>
+    </div>
+
+    <!--/modals-->
     <div class="draft-name"><span>Public Draft</span></div>
     <div class="card-count"><span>150 Cards Left</span></div>
     <div class="player-turn"><span>Who's Pick Is It?</span></div>
