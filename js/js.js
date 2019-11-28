@@ -30,6 +30,7 @@ let privateDraftDB;
   let submitCubeBtn = document.querySelector(".submit-cube-upload-btn");
   let currentCube = "alex-pauper-cube";
   let newDraftName;
+  let draftDropdown = document.querySelector(".draft-dropdown");
 
   // Firebase Variables
   const ref = firebase.database().ref();
@@ -65,7 +66,6 @@ let privateDraftDB;
   setTimeout(function() {
     if (privateDraftDB) {
       ref.child(privateDraftDB).on("value", function(snapshot) {
-        console.log("yaaa", snapshot.val().draftPoolRemaining);
         let draftPool = snapshot.val().draftPoolRemaining;
         if (draftPool !== undefined) {
           if (draftPool.length === 100) {
@@ -80,7 +80,6 @@ let privateDraftDB;
       //privateDraft
 
       ref.child(privateDraftDB).on("value", function(snapshot) {
-        console.log("turn", snapshot.val().player1Turn);
         let player1Turn = snapshot.val().player1Turn;
         if (player1Turn) {
           playerTurn.innerHTML = "Player 1's Pick";
@@ -157,7 +156,6 @@ let privateDraftDB;
     privateDraftDB = dbName;
     getData("cubes").then(function(value) {
       value = value[currentCube];
-      console.log("value", value[currentCube]);
       let newDraftList = Object.values(value);
       newDraftList = shuffleArray(newDraftList).splice(0, 100);
       ref.child(dbName).update({ draftPoolRemaining: newDraftList });
@@ -266,6 +264,16 @@ let privateDraftDB;
     localStorage.setItem("privateDraftName", name);
   }
 
+  function loadCubeSelection(dbName) {
+    ref.child("cubes").on("value", function(snapshot) {
+      snapshot.forEach(function(ele) {
+        let newCubeOption = document.createElement("option");
+        newCubeOption.innerHTML = ele.key;
+        draftDropdown.appendChild(newCubeOption);
+      });
+    });
+  }
+
   // Draft Functions
   function pickPileButtonClick(ele) {
     getData(privateDraftDB).then(function(privateDraftData) {
@@ -328,7 +336,6 @@ let privateDraftDB;
               tempDraftPool = null;
             }
           }
-          console.log("tempcardpile", tempCardPile);
           if (draftPool) {
             ref
               .child(privateDraftDB)
@@ -348,8 +355,6 @@ let privateDraftDB;
 
   function addPileToPlayerPool(playerPile, cardPile) {
     getData(privateDraftDB).then(function(privateDraftData) {
-      console.log("cardpile", privateDraftData[cardPile], cardPile);
-      console.log("playerpile", privateDraftData.playerPile, playerPile);
       let pile = privateDraftData[cardPile];
       let pickedCards = privateDraftData[playerPile];
       if (pickedCards.array === undefined) {
@@ -424,7 +429,6 @@ let privateDraftDB;
     for (let i = 1; i < 5; i++) {
       getData(privateDraftDB).then(function(draftData) {
         let pile = draftData["cardPile" + i];
-        console.log("wuuuh", pile);
         if (pile.array.length === 1 && pile.array[0].name === " ") {
           document.querySelector(".take-pile-" + i).disabled = true;
         }
@@ -474,17 +478,15 @@ let privateDraftDB;
     }
     let uniqueName = false;
     getData(newDraftName).then(function(data) {
-      console.log(data);
       if (!data) {
         uniqueName = true;
       }
       if (!uniqueName) {
         alert("That name is already in use, please try again.");
         return;
-      } else if (
-        document.querySelector(".existing-cube-radial").checked &&
-        document.querySelector(".draft-dropdown").value === "alex-cube"
-      ) {
+      } else if (document.querySelector(".existing-cube-radial").checked) {
+        currentCube =
+          draftDropdown.options[draftDropdown.selectedIndex].innerHTML;
         newDraftModal.style.display = "none";
         initializeNewPrivateDraft(newDraftName);
       } else if (document.querySelector(".add-cube-radial").checked) {
@@ -520,7 +522,6 @@ let privateDraftDB;
     }
     let nameExists = false;
     getData(name).then(function(data) {
-      console.log(data);
       if (data) {
         nameExists = true;
       }
@@ -542,6 +543,7 @@ let privateDraftDB;
       loadExistingDraft(privateDraftDB);
     }
     disableEmptyPileButtons();
+    loadCubeSelection();
   };
 
   newPrivateDraftBtn.addEventListener("click", event => {
@@ -563,7 +565,7 @@ let privateDraftDB;
   });
 
   submitCubeBtn.addEventListener("click", event => {
-    submitCubeList();
+    submitCubeList(ref);
   });
 
   //input validations
@@ -578,9 +580,7 @@ let privateDraftDB;
     return true;
   }
   function tester() {
-    console.log("tester");
     getData("cubes").then(function(data) {
-      console.log("data", data.matt9);
       alert(data);
     });
   }
