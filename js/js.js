@@ -540,7 +540,7 @@ let cardArray = cardList.split("|");
       clearHTMLPlayerPiles();
       loadExistingDraft(privateDraftDB);
     }
-    disableEmptyPileButtons();
+    // disableEmptyPileButtons();
     loadCubeSelection();
   };
 
