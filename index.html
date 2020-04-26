@@ -7,7 +7,7 @@
   </head>
   <body>
     <!--modals-->
-    <div class="new-draft-modal modal">
+    <div class="new-draft-modal modal hidden">
       <h3>Please Enter A Unique Name For Your Draft:</h3>
       <input type="text" class="new-draft-name">
       <h3>Choose An Existing Cube Or Enter A New Cube:</h3>
@@ -26,6 +26,7 @@
         </form>
       </div>
       <button class="submit-draft-selection-btn modal-submit">Submit</button>
+      <div class="close-modal">X</div>
     </div>
 
     <div class="add-cube-modal modal">
@@ -37,10 +38,11 @@
         <h3>Please note there will be a 10-second delay after you hit submit to query the gatherer API.</h3>
         <button class="submit-cube-upload-btn modal-submit">Submit</button>
       </div>
+      <div class="close-modal">X</div>
     </div>
 
     <!--/modals-->
-    <div class="draft-name"><span>MTG Winchester App</span></div>
+    <div class="draft-name"><span>MTG Winchester App: Please Start A New Draft or Join an Existing Draft</span></div>
     <div class="card-count"><span>150 Cards Left</span></div>
     <div class="player-turn"><span>Who's Pick Is It?</span></div>
     <div class="top-btn-row">
