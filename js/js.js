@@ -487,11 +487,11 @@ let cardArray = cardList.split("|");
       } else if (document.querySelector(".existing-cube-radial").checked) {
         currentCube =
           draftDropdown.options[draftDropdown.selectedIndex].innerHTML;
-        newDraftModal.style.display = "none";
+        hide(newDraftModal);
         initializeNewPrivateDraft(newDraftName);
       } else if (document.querySelector(".add-cube-radial").checked) {
-        newDraftModal.style.display = "none";
-        addCubeModal.style.display = "block";
+        hide(newDraftModal);
+        unhide(addCubeModal);
       }
     });
   }
@@ -507,7 +507,7 @@ let cardArray = cardList.split("|");
     createCubeList(newCubeName, submittedCubeArray);
     setTimeout(function() {
       currentCube = newCubeName;
-      addCubeModal.style.display = "none";
+      hide(addCubeModal);
       initializeNewPrivateDraft(newDraftName);
     }, 10000);
   }
