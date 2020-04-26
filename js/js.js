@@ -30,6 +30,7 @@ let cardArray = cardList.split("|");
   let currentCube = "alex-pauper-cube";
   let newDraftName;
   let draftDropdown = document.querySelector(".draft-dropdown");
+  let closeModalBtns = document.querySelectorAll(".close-modal");
 
   // Firebase Variables
   const ref = firebase.database().ref();
@@ -461,8 +462,9 @@ let cardArray = cardList.split("|");
   //   });
   // }
 
+
   function namePrivateDraft() {
-    newDraftModal.style.display = "block";
+    unhide(newDraftModal);
   }
 
   function submitDraftSelection() {
@@ -582,4 +584,26 @@ let cardArray = cardList.split("|");
       alert(data);
     });
   }
+
+  //Modal Close button
+
+  closeModalBtns.forEach(ele => {
+    ele.addEventListener("click", event => {
+      closeModal(ele);
+    })
+  })
+
+  function closeModal(element) {
+    hide(element.parentElement);
+  }
+
+  function hide(ele) {
+    ele.classList.add("hidden");
+  }
+
+  function unhide(ele) {
+    ele.classList.remove("hidden");
+    ele.style.display = "block";
+  }
+
 })();
