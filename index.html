@@ -2,44 +2,78 @@
 <html>
   <head>
   <meta charset='utf-8'>
-  <title>Roto App</title>
+  <title>Winchester App</title>
   <link rel="stylesheet" href="css/css.css">
   </head>
   <body>
+    <!--modals-->
+    <div class="new-draft-modal modal">
+      <h3>Please Enter A Unique Name For Your Draft:</h3>
+      <input type="text" class="new-draft-name">
+      <h3>Choose An Existing Cube Or Enter A New Cube:</h3>
+      <div class="new-draft-radials">
+        <div class="new-draft-radial-option">
+          <input type="radio" name="cube-option" class="existing-cube-radial"> Existing Cube
+        </div>
+        <div class="new-draft-radial-option">
+          <input type="radio" name="cube-option" class="add-cube-radial"> Add a New Cube
+        </div>
+      </div>
+      <div class="draft-list-dropdown">
+        <form name="draft-list">
+          <select class="draft-dropdown">
+          </select>
+        </form>
+      </div>
+      <button class="submit-draft-selection-btn modal-submit">Submit</button>
+    </div>
 
+    <div class="add-cube-modal modal">
+      <h3>Please Enter A Unique Name For This Cube:</h3>
+      <input type="text" class="new-cube-name">
+      <h3>Please Enter A Cube of at Least 100 Cards, Separated By Line:</h3>
+      <div class="cube-list-textarea">
+        <textarea rows="20" cols="100"></textarea>
+        <h3>Please note there will be a 10-second delay after you hit submit to query the gatherer API.</h3>
+        <button class="submit-cube-upload-btn modal-submit">Submit</button>
+      </div>
+    </div>
 
-      <div class="card-count"><span>150 Cards Left</span></div>
-      <button class="reset-draft-btn">Reset Draft</button>
+    <!--/modals-->
+    <div class="draft-name"><span>MTG Winchester App</span></div>
+    <div class="card-count"><span>150 Cards Left</span></div>
+    <div class="player-turn"><span>Who's Pick Is It?</span></div>
+    <div class="top-btn-row">
+      <button class="top-btn new-private-draft-btn">Start New Draft</button>
+      <button class="top-btn join-existing-draft-btn">Join Existing Draft</button>
+    </div>
 
-
-    <!-- <li class="test-stack"></li> -->
-    <div class="test"></div>
     <div class="card-piles">
       <div class="card-pile-container">
         <button class="take-pile-btn take-pile-1">Take This Pile</button>
         <div class="card-pile card-pile-1">
-          <ul class="pile-1-list pile-list"></ul>
+          <ul class="pile-1-list pile-list cardPile1"></ul>
         </div>
       </div>
 
       <div class="card-pile-container">
         <button class="take-pile-btn take-pile-2">Take This Pile</button>
         <div class="card-pile card-pile-2">
-          <ul class="pile-2-list pile-list"></ul>
+          <ul class="pile-2-list pile-list cardPile2"></ul>
         </div>
       </div>
 
       <div class="card-pile-container">
         <button class="take-pile-btn take-pile-3">Take This Pile</button>
         <div class="card-pile card-pile-3">
-          <ul class="pile-3-list pile-list"></ul>
+          <ul class="pile-3-list pile-list cardPile3"></ul>
         </div>
       </div>
 
       <div class="card-pile-container">
         <button class="take-pile-btn take-pile-4">Take This Pile</button>
         <div class="card-pile card-pile-4">
-          <ul class="pile-4-list pile-list"></ul>
+          <ul class="pile-4-list pile-list cardPile4"></ul>
         </div>
       </div>
 
@@ -48,24 +82,25 @@
     <div class="player-piles">
       <p>player 1's pile</p>
       <div class="card-pile player-1-pile">
-        <ul class="player-1-list pile-list"></ul>
+        <ul class="player-1-list pile-list player1Pile"></ul>
       </div>
       <p>player 2's pile</p>
       <div class="card-pile player-2-pile">
-        <ul class="player-2-list pile-list"></ul>
+        <ul class="player-2-list pile-list player2Pile"></ul>
       </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/5.5.9/firebase.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
       // Initialize Firebase
       var config = {
-        apiKey: "AIzaSyD2q4k4wgOVziBQZxIXGaP5MvJ44JKEsiI",
-        authDomain: "rotoappbackend.firebaseapp.com",
-        databaseURL: "https://rotoappbackend.firebaseio.com",
-        projectId: "rotoappbackend",
-        storageBucket: "rotoappbackend.appspot.com",
-        messagingSenderId: "1001146521167"
+        apiKey: "AIzaSyBQ3Mm-wJQIbv5qGFYxcrvKggd05su_UdI",
+        authDomain: "winibackend.firebaseapp.com",
+        databaseURL: "https://winibackend.firebaseio.com",
+        projectId: "winibackend",
+        storageBucket: "winibackend.appspot.com",
+        messagingSenderId: "192941511269"
       };
       firebase.initializeApp(config);
     </script>

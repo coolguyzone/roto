@@ -1,0 +1,15 @@
+To Do:
+
+Epic:
+Rebuild in React
+
+Big:
+Add firebase security
+
+Medium:
+Fix card-name bug
+Fix cube-add draft bug (have to start a second draft to see cards w/ new cube)
+
+Small:
+Add 'x' out for modals and cancels for popups
+Fix screen orientation for cube-add modal

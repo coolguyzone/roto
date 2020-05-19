@@ -136,7 +136,7 @@ img {
 }
 
 .card-piles {
-  margin-top: 150px;
+  margin-top: 30px;
 }
 
 .card-piles li img {
@@ -150,12 +150,23 @@ img {
 
 .card-pile {
   border: 2px solid white;
-  height: 1000px;
+  min-height: 310px;
   margin: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
-.card-count {
+.draft-name {
   margin-top: 50px;
+  margin-bottom: 10px;
+  font-size: 2em;
+  text-align: center;
+}
+
+.player-turn,
+.card-count {
+  margin-top: 10px;
   font-size: 2em;
   text-align: center;
 }
@@ -165,11 +176,63 @@ img {
   display: block;
 }
 
+.top-btn-row {
+  text-align: center;
+  margin-top: 20px;
+}
+
 .reset-draft-btn {
-  display: block;
   margin: auto;
 }
 
 .pile-list {
   display: block;
+}
+
+/* MODAL */
+
+.modal {
+  display: none;
+  background-color: black;
+  position: absolute;
+  top: 20%;
+  left: 30%;
+  padding: 2%;
+  border: solid 2px white;
+  border-radius: 5%;
+}
+
+.new-draft-radial-option {
+  display: block;
+  margin: 10px 0;
+}
+
+.new-draft-radials {
+  float: left;
+  width: 50%;
+}
+
+.draft-list-dropdown {
+  float: right;
+  width: 50%;
+  margin-top: 10px;
+}
+
+.modal-submit {
+  display: block;
+  margin-top: 90px;
+  font-size: 2em;
+  width: 160px;
+  margin-left: 35%;
+}
+
+.modal {
+  text-align: center;
+}
+
+.modal input[type="text"] {
+  margin-top: 50px;
+  margin-bottom: 10px;
+  font-size: 2em;
+  text-align: center;
 }
